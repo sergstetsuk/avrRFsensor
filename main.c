@@ -9,12 +9,12 @@
  * This Revision: $Id: main.c 1 2014.10.28 15:00 cs $
  */
 
-/*
-This example should run on most AVRs with only little changes. No special
-hardware resources except INT0 are used. You may have to change usbconfig.h for
-different I/O pins for USB. Please note that USB D+ must be the INT0 pin, or
-at least be connected to INT0 as well.
-*/
+/**
+ * This example should run on most AVRs with only little changes. No special
+ * hardware resources except INT0 are used. You may have to change usbconfig.h for
+ * different I/O pins for USB. Please note that USB D+ must be the INT0 pin, or
+ * at least be connected to INT0 as well.
+ */
 
 #include <avr/io.h>
 #include <avr/wdt.h>
@@ -26,14 +26,26 @@ at least be connected to INT0 as well.
 
 void Delay1s(void)
 {
-volatile unsigned int cnt;
-for (cnt = 0; cnt < 55555; cnt++); //~1sec Delay on a 1MHz clock
+    volatile unsigned int cnt,cnt1;
+    for (cnt1 = 0; cnt1 < 2; cnt1++)
+    {
+        wdt_reset();
+        for (cnt = 0; cnt < 55555; cnt++); //~1sec Delay on a 1MHz clock
+    }
 }
 
 char SPI_Transmit (char cData)
 {
+    char i;
     USIDR = cData;
-    while(!(USISR & (1<<USISIF)));
+    for(i=0;i<8;i++)
+    {
+     USICR = (0<<USISIE)|(0<<USIOIE)|(0<<USIWM1)|(1<<USIWM0)
+            |(0<<USICS1)|(0<<USICS0)|(0<<USICLK)|(1<<USITC);
+     USICR = (0<<USISIE)|(0<<USIOIE)|(0<<USIWM1)|(1<<USIWM0)
+            |(0<<USICS1)|(0<<USICS0)|(1<<USICLK)|(1<<USITC);
+    }
+    ///while(!(USISR & (1<<USISIF)));
     return USIDR;
 }
 
@@ -47,25 +59,37 @@ int main(void)
      * That's the way we need D+ and D-. Therefore we don't need any
      * additional hardware initialization.
      */
-     DDRB = (1<<DDB3)|(1<<DDB2)|(1<<DDB0);
-     //USICR = (1<<USISIE)|(0<<USIOIE)|(0<<USIWM1)|(1<<USIWM0)
-       //     |(0<<USICS1)|(0<<USICS0)|(0<<USICLK)|(0<<USITC);
+     DDRB = (1<<DDB3)|(1<<DDB2)|(1<<DDB1);
+     USICR = (0<<USISIE)|(0<<USIOIE)|(0<<USIWM1)|(1<<USIWM0)
+            |(0<<USICS1)|(0<<USICS0)|(0<<USICLK)|(0<<USITC);
 
      PORTB = 0x00;
 //    sei();
-    char i;
+    unsigned char i,r;
+	//SPI_Transmit(255);
+	//PORTB ^= LCD_LOAD;  //Load data
+	//PORTB ^= LCD_LOAD;
+
     for(i=0;;i++){                /* main event loop */
+	i &= 0x7F;	//most significant is write/read bit = 1/0
         wdt_reset();
-        //PORTB ^= (1<<PORTB2); //Clock
+	//SPI_Transmit(i);
+	//PORTB ^= LCD_LOAD;  //Load data
+	//PORTB ^= LCD_LOAD;
+        //Delay1s();
+//continue;
+	SPI_Transmit(i);
+	r = 15-i;
+	r = SPI_Transmit(0);
+	LCD_Clear();
+        LCD_Transmit((r & 0x0F));
+        LCD_Transmit((r & 0xF0)>>4);
+	LCD_Transmit(255);
+        LCD_Transmit((i & 0x0F));
+        LCD_Transmit((i & 0xF0)>>4);
+
         Delay1s();
-        Delay1s();
-        //if (i%18) PORTB ^= (1<<PORTB0); //Data
-        //else {
-        //     PORTB ^= (1<<PORTB3);  //Load data
-        //     PORTB ^= (1<<PORTB3);
-        //}
-        LCD_Transmit(15-(i & 0x0F));
-    }
+        }
     return 0;
 }
 
