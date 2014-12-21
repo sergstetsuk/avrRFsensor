@@ -1,4 +1,5 @@
-/* Name: main.c
+/**
+ * Name: main.c
  * Project: radio mayak
  * Author: Serg Stetsuk
  * Creation Date: 2014.10.28
