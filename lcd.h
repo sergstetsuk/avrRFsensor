@@ -1,7 +1,7 @@
 #ifndef LCD_H
 #define LCD_H
 
-/*
+/**
  * LCD driver header file for TIC8148 LCD
  */
 
