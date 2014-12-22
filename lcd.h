@@ -9,6 +9,8 @@
 #define LCD_CLCK (1<<PORTB2)
 #define LCD_LOAD (1<<PORTB3)
 
+void inline LCD_Init();
+void inline LCD_Load();
 void LCD_Transmit(char);
 void LCD_Clear();
 

@@ -1,5 +1,6 @@
 #include <avr/io.h>
 
+#include "spi.h"
 #include "lcd.h"
 
 const unsigned char CHARTABLE[] = {
@@ -21,36 +22,29 @@ const unsigned char CHARTABLE[] = {
       0b00011110,//0b01111000, //F
                       };
 
+void inline LCD_Init()
+{
+    DDRB |= LCD_LOAD;   //Configure LOAD pin as output
+    //PORTB &= ~LCD_LOAD;
+}
+
+void inline LCD_Load()
+{
+    PORTB ^= LCD_LOAD;  //Load data strobe
+    PORTB ^= LCD_LOAD;
+}
 void LCD_Transmit(char cData)
 {
-    int tData = 0;
+    char tData = 0;
     if (cData < sizeof(CHARTABLE)/sizeof(CHARTABLE[0]))
     {
-	tData = CHARTABLE[cData];
+        tData = CHARTABLE[cData];
     }
     
-    USIDR = 0;
-    USICR = (0<<USISIE)|(0<<USIOIE)|(0<<USIWM1)|(1<<USIWM0)
-            |(0<<USICS1)|(0<<USICS0)|(0<<USICLK)|(1<<USITC);
-    USICR = (0<<USISIE)|(0<<USIOIE)|(0<<USIWM1)|(1<<USIWM0)
-            |(0<<USICS1)|(0<<USICS0)|(1<<USICLK)|(1<<USITC);
-/*  USIDR = tData;
-    for(i=0; i<8; i++)
-    {
-        //~ if(tData & 0x01) PORTB |= LCD_DATA;
-        //~ else PORTB &= ~LCD_DATA;
-        //~ PORTB ^= LCD_CLCK; //Clock
-        //~ PORTB ^= LCD_CLCK; //Clock
-        //~ tData >>= 1;
-    USICR = (0<<USISIE)|(0<<USIOIE)|(0<<USIWM1)|(1<<USIWM0)
-            |(0<<USICS1)|(0<<USICS0)|(0<<USICLK)|(1<<USITC);
-    USICR = (0<<USISIE)|(0<<USIOIE)|(0<<USIWM1)|(1<<USIWM0)
-            |(0<<USICS1)|(0<<USICS0)|(1<<USICLK)|(1<<USITC);
-    }
-*/
+    SPI_SetData(0);
+    SPI_OneClock();
     SPI_Transmit(tData);
-    PORTB ^= LCD_LOAD;  //Load data
-    PORTB ^= LCD_LOAD;
+    LCD_Load();
 }
 
 void LCD_Clear()
