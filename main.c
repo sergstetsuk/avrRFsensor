@@ -24,11 +24,12 @@
 
 #include "spi.h"
 #include "lcd.h"
+#include "rfm69hw.h"
 
 void Delay1s(void)
 {
     volatile unsigned int cnt,cnt1;
-    for (cnt1 = 0; cnt1 < 20; cnt1++)
+    for (cnt1 = 0; cnt1 < 10; cnt1++)
     {
         wdt_reset();
         for (cnt = 0; cnt < 55555; cnt++); //~1sec Delay on a 1MHz clock
@@ -51,19 +52,84 @@ int main(void)
     DDRB |= (1<<DDB4);
     PORTB = (1<<PORTB4); //CS FOR RFM69HW 1 = not selected
 //    sei();
-    unsigned char i,r;
+    unsigned char i,r0,r1,r2;
 
     for(i=0;;i++){                /* main event loop */
-	i &= 0x7F;	//most significant is write/read bit = 1/0
+	//i &= 0x3F;	//most significant is write/read bit = 1/0
         wdt_reset();
-    PORTB &= ~(1<<PORTB4);
-	SPI_Transmit(i);
-	r = SPI_Transmit(0);
-    PORTB |= (1<<PORTB4);
-	LCD_Clear();
-        LCD_Transmit((r & 0x0F));
-        LCD_Transmit((r & 0xF0)>>4);
-	LCD_Transmit(255);
+#if 0
+        if (i == 0x00)
+        {
+            InitRFM69HWtx();
+        } else
+        if ( !(i%4) )
+        {
+            WriteRFM69HW(RegFifo,0x90);
+            WriteRFM69HW(RegFifo,i);
+            WriteRFM69HW(RegFifo,i);
+            WriteRFM69HW(RegFifo,i);
+            WriteRFM69HW(RegFifo,i);
+            WriteRFM69HW(RegFifo,i);
+            WriteRFM69HW(RegFifo,i);
+            WriteRFM69HW(RegFifo,0x70);
+        }
+        
+#else
+        if (i == 0x00)
+        {
+            InitRFM69HWstndby();
+        }
+        if (i == 0x01)
+        {
+            InitRFM69HWrx();
+        }
+        
+        //~ if (ReadRFM69HW(RegIrqFlags2)&0x40)
+        //~ {
+            //~ c=0;
+            //~ LCD_Clear();
+            //~ while (ReadRFM69HW(RegIrqFlags2)&0x40)
+            //~ {
+                //~ c++;
+                //~ r0 = ReadRFM69HW(RegFifo);
+                //~ //!~ LCD_Transmit((r0 & 0x0F));
+                //~ //!~ LCD_Transmit((r0 & 0xF0)>>4);
+                //~ //!~ LCD_Transmit(255);
+            //~ }
+                //~ LCD_Transmit((c & 0x0F));
+                //~ LCD_Transmit((c & 0xF0)>>4);
+        //~ r0 = ReadRFM69HW(RegOpMode); //debug 0x01
+        //~ r1 = ReadRFM69HW(RegIrqFlags1); //debug 0x27
+        //~ r2 = ReadRFM69HW(RegIrqFlags2); //debug 0x28
+            //~ Delay1s();
+        //~ LCD_Transmit((r2 & 0x0F));
+        //~ LCD_Transmit((r2 & 0xF0)>>4);
+	//~ //!~ LCD_Transmit(255);
+        //~ LCD_Transmit((r1 & 0x0F));
+        //~ LCD_Transmit((r1 & 0xF0)>>4);
+	//~ //!~ LCD_Transmit(255);
+        //~ LCD_Transmit((r0 & 0x0F));
+        //~ LCD_Transmit((r0 & 0xF0)>>4);
+	//~ //!~ LCD_Transmit(255);
+        //~ LCD_Transmit(255);
+        //~ LCD_Transmit(255);
+            //~ Delay1s();
+        //~ }
+#endif
+        //r0 = ReadRFM69HW(i);
+        r0 = ReadRFM69HW(RegOpMode); //debug 0x01
+        r1 = ReadRFM69HW(RegIrqFlags1); //debug 0x27
+        r2 = ReadRFM69HW(RegIrqFlags2); //debug 0x28
+    //LCD_Clear();
+        LCD_Transmit((r2 & 0x0F));
+        LCD_Transmit((r2 & 0xF0)>>4);
+	//~ LCD_Transmit(255);
+        LCD_Transmit((r1 & 0x0F));
+        LCD_Transmit((r1 & 0xF0)>>4);
+	//~ LCD_Transmit(255);
+        LCD_Transmit((r0 & 0x0F));
+        LCD_Transmit((r0 & 0xF0)>>4);
+	//~ LCD_Transmit(255);
         LCD_Transmit((i & 0x0F));
         LCD_Transmit((i & 0xF0)>>4);
 

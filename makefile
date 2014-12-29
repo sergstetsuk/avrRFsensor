@@ -119,7 +119,8 @@ help:
 	@echo "make help ...... to show this help screen"
 	@echo "make ? ......... to show this help screen"
 
-all: clean hex erase fuse flash #lock
+#all: clean hex erase fuse flash #lock
+all: clean hex erase flash
 
 hex: $(EXEC)
 	avr-objcopy -j .text -j .data -O ihex $(EXEC) $(HEX)

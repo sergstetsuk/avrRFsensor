@@ -150,4 +150,11 @@
 #define RegReserved7E 0x7E
 #define RegReserved7F 0x7F
 
+unsigned char ReadRFM69HW(unsigned char);
+unsigned char WriteRFM69HW(unsigned char, unsigned char);
+void InitRFM69HWstndby();
+void InitRFM69HWsleep();
+void InitRFM69HWrx();
+void InitRFM69HWtx();
+
 #endif /*RFM69HW_H*/
