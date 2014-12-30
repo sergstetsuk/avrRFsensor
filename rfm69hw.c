@@ -35,11 +35,11 @@ void InitRFM69HWsleep()
 void InitRFM69HWrx()
 {
     WriteRFM69HW(RegFrfMsb,0x6c);
-    WriteRFM69HW(RegFrfMid,0x4f);
-    WriteRFM69HW(RegFrfLsb,0xf8);
+    WriteRFM69HW(RegFrfMid,0x40);
+    WriteRFM69HW(RegFrfLsb,0x00);
     WriteRFM69HW(RegRssiThresh,0xde);
     WriteRFM69HW(RegSyncConfig,0b10111000);
-    WriteRFM69HW(RegPacketConfig1,0b0011000);
+    WriteRFM69HW(RegPacketConfig1,0b00110000);
     WriteRFM69HW(RegPayloadLength,0x08);
     WriteRFM69HW(RegFifoThresh,0x87);
     WriteRFM69HW(RegAutoModes,0b01100100); //enter crcok,exit fifoempty, interstate sleep
@@ -49,12 +49,16 @@ void InitRFM69HWrx()
 void InitRFM69HWtx()
 {
     WriteRFM69HW(RegFrfMsb,0x6c);
-    WriteRFM69HW(RegFrfMid,0x4f);
-    WriteRFM69HW(RegFrfLsb,0xf8);
+    WriteRFM69HW(RegFrfMid,0x40);
+    WriteRFM69HW(RegFrfLsb,0x00);
     WriteRFM69HW(RegSyncConfig,0b10111000);
-    WriteRFM69HW(RegPacketConfig1,0b0011000);
+    WriteRFM69HW(RegPacketConfig1,0b00110000);
     WriteRFM69HW(RegPayloadLength,0x08);
     WriteRFM69HW(RegFifoThresh,0x87);
     WriteRFM69HW(RegAutoModes,0b01011011); //enter fifolevel,exit packetsent, interstate tx
+    //WriteRFM69HW(RegPaLevel,0x7F);
+    //WriteRFM69HW(RegOcp,0x0F);
+    //WriteRFM69HW(RegTestPa1,0x5D);
+    //WriteRFM69HW(RegTestPa2,0x7C);
     WriteRFM69HW(RegOpMode,RegOp_ModeSleep);
 }
