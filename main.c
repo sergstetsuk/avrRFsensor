@@ -96,14 +96,18 @@ ISR(WDT_vect)
         WriteRFM69HW(RegFifo,i);
         WriteRFM69HW(RegFifo,i);
         WriteRFM69HW(RegFifo,0x70);
+        //~ WriteRFM69HW(RegOpMode,RegOp_ModeTX);
+    } else
+    {
+        //~ WriteRFM69HW(RegOpMode,RegOp_ModeSleep);
     }
         
 #else
-    if (i == 0x00)
+    if (i == 0x01)
     {
         InitRFM69HWstndby();
     }
-    if (i == 0x01)
+    if (i == 0x02)
     {
         InitRFM69HWrx();
     }
