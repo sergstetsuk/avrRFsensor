@@ -6,15 +6,17 @@
 
 #define RegFifo 0x00 //FIFO data input/output
 #define RegOpMode 0x01 //Operation mode register
-    #define RegOp_SequencerOff 0x80 //
-    #define RegOp_ListenOn 0x40 //Enables listen mode in standby mode
-    #define RegOp_ListenAbort 0x20 //Mask for operation mode
-    #define RegOp_Mode_Mask 0x1C //Sleep mode
-    #define RegOp_ModeSleep 0x00 //Sleep mode
-    #define RegOp_ModeStndby 0x04 //Standby mode
-    #define RegOp_ModeFS 0x08 //Frequency Synthesizer mode
-    #define RegOp_ModeTX 0x0C //Transmit mode
-    #define RegOp_ModeRX 0x10 //Receive mode
+    #define OPMODE_SEQUENCER_ON 0x00 //
+    #define OPMODE_SEQUENCER_OFF 0x80 //
+    #define OPMODE_LISTENON 0x40 //Enables listen mode in standby mode
+    #define OPMODE_LISTENOFF 0x00 //Enables listen mode in standby mode
+    #define OPMODE_LISTENABORT 0x20 //Mask for operation mode
+    #define OPMODE_MODEMASK 0x1C //Sleep mode
+    #define OPMODE_SLEEP 0x00 //Sleep mode
+    #define OPMODE_STNDBY 0x04 //Standby mode
+    #define OPMODE_FS 0x08 //Frequency Synthesizer mode
+    #define OPMODE_TX 0x0C //Transmit mode
+    #define OPMODE_RX 0x10 //Receive mode
 #define RegDataModul 0x02
 #define RegBitRateMsb 0x03
 #define RegBitRateLsb 0x04
@@ -152,8 +154,8 @@
 
 unsigned char ReadRFM69HW(unsigned char);
 unsigned char WriteRFM69HW(unsigned char, unsigned char);
-void InitRFM69HWstndby();
-void InitRFM69HWsleep();
+//~ void InitRFM69HWstndby();
+//~ void InitRFM69HWsleep();
 void InitRFM69HWrx();
 void InitRFM69HWtx();
 

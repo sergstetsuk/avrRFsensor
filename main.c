@@ -81,12 +81,12 @@ ISR(WDT_vect)
 
 	i = TickCounter & 0x3F;	//most significant bit is write(1)/read(0) flag
 
-#if 1
+#if 0
     if (i == 0x01)
     {
         InitRFM69HWtx();
     } else
-    if ( !(i%4) )
+    if ( !(i%4) /*i == 4*/ )
     {
         WriteRFM69HW(RegFifo,0x90);
         WriteRFM69HW(RegFifo,i);
@@ -105,25 +105,26 @@ ISR(WDT_vect)
 #else
     if (i == 0x01)
     {
-        InitRFM69HWstndby();
-    }
+        //~ InitRFM69HWstndby();
+    } else
     if (i == 0x02)
     {
         InitRFM69HWrx();
-    }
+    } else
     
-    //~ if (ReadRFM69HW(RegIrqFlags2)&0x40)
-    //~ {
+    if (ReadRFM69HW(RegIrqFlags2)&0x40)
+    {
         //~ c=0;
         //~ LCD_Clear();
         //~ while (ReadRFM69HW(RegIrqFlags2)&0x40)
         //~ {
             //~ c++;
-            //~ r0 = ReadRFM69HW(RegFifo);
-            //~ //!~ LCD_Transmit((r0 & 0x0F));
-            //~ //!~ LCD_Transmit((r0 & 0xF0)>>4);
-            //~ //!~ LCD_Transmit(255);
-        //~ }
+        r0 = ReadRFM69HW(RegFifo);
+        LCD_Transmit((r0 & 0x0F));
+        LCD_Transmit((r0 & 0xF0)>>4);
+        LCD_Transmit(255);
+        return;
+    }
             //~ LCD_Transmit((c & 0x0F));
             //~ LCD_Transmit((c & 0xF0)>>4);
     //~ r0 = ReadRFM69HW(RegOpMode); //debug 0x01
