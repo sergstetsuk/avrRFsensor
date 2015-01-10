@@ -12,6 +12,7 @@
 void inline LCD_Init();
 void inline LCD_Load();
 void LCD_Transmit(char);
+void LCD_TransmitDot(char);
 void LCD_Clear();
 
 #endif /*LCD_H*/

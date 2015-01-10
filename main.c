@@ -72,29 +72,27 @@ ISR(WDT_vect)
 {
  //   return;
 //watchdog interrupt is very cosy for use in powerdown mode
-    unsigned char i,r0,r1,r2; //some needed vars
+    unsigned char r0,r1,r2; //some needed vars
     TickCounter++;  //increment global tick counter
     SPI_Init(); //init spi interface
     LCD_Init(); //init lcd device
     DDRB |= (1<<DDB4);  //init CS pins for devices
     PORTB = (1<<PORTB4); //CS FOR RFM69HW 1 = not selected
 
-	i = TickCounter & 0x3F;	//most significant bit is write(1)/read(0) flag
-
 #if 0
-    if (i == 0x01)
+    if (TickCounter == 0x01)
     {
         InitRFM69HWtx();
     } else
-    if ( !(i%4) /*i == 4*/ )
+    if ( !(TickCounter%4))
     {
         WriteRFM69HW(RegFifo,0x90);
-        WriteRFM69HW(RegFifo,i);
-        WriteRFM69HW(RegFifo,i);
-        WriteRFM69HW(RegFifo,i);
-        WriteRFM69HW(RegFifo,i);
-        WriteRFM69HW(RegFifo,i);
-        WriteRFM69HW(RegFifo,i);
+        WriteRFM69HW(RegFifo,TickCounter & 0xFF);
+        WriteRFM69HW(RegFifo,(TickCounter & 0xFF00) >> 8);
+        WriteRFM69HW(RegFifo,0x00);
+        WriteRFM69HW(RegFifo,0x00);
+        WriteRFM69HW(RegFifo,0x00);
+        WriteRFM69HW(RegFifo,0x00);
         WriteRFM69HW(RegFifo,0x70);
         //~ WriteRFM69HW(RegOpMode,RegOp_ModeTX);
     } else
@@ -103,11 +101,11 @@ ISR(WDT_vect)
     }
         
 #else
-    if (i == 0x01)
+    if (TickCounter == 0x01)
     {
         //~ InitRFM69HWstndby();
     } else
-    if (i == 0x02)
+    if (TickCounter == 0x02)
     {
         InitRFM69HWrx();
     } else
@@ -115,14 +113,33 @@ ISR(WDT_vect)
     if (ReadRFM69HW(RegIrqFlags2)&0x40)
     {
         //~ c=0;
-        //~ LCD_Clear();
-        //~ while (ReadRFM69HW(RegIrqFlags2)&0x40)
-        //~ {
+        LCD_Clear();
             //~ c++;
-        r0 = ReadRFM69HW(RegFifo);
-        LCD_Transmit((r0 & 0x0F));
-        LCD_Transmit((r0 & 0xF0)>>4);
-        LCD_Transmit(255);
+            r0 = ReadRFM69HW(RegFifo);
+            r1 = ReadRFM69HW(RegFifo);
+            r2 = ReadRFM69HW(RegFifo);
+            unsigned int tempTick;
+            unsigned char sec,min,hour;
+            tempTick = r2 * 256 + r1;
+            sec = tempTick%60;
+            min = (tempTick/60)%60;
+            hour = tempTick/60/60;
+            //~ LCD_Transmit(tempTick&0x0F);
+            //~ LCD_Transmit(tempTick>>4&0x0F);
+            //~ LCD_Transmit(tempTick>>8&0x0F);
+            //~ LCD_Transmit(tempTick>>12&0x0F);
+            LCD_Transmit(sec%10);
+            LCD_Transmit(sec/10);
+            LCD_TransmitDot(min%10);
+            LCD_Transmit(min/10);
+            LCD_TransmitDot(hour%10);
+            LCD_Transmit(255);
+            LCD_Transmit((r0 & 0x0F));
+            LCD_Transmit((r0 & 0xF0)>>4);
+        while (ReadRFM69HW(RegIrqFlags2)&0x40)
+        {
+            r0 = ReadRFM69HW(RegFifo);
+        }
         return;
     }
             //~ LCD_Transmit((c & 0x0F));
@@ -153,14 +170,14 @@ ISR(WDT_vect)
     LCD_Transmit((r2 & 0x0F));
     LCD_Transmit((r2 & 0xF0)>>4);
 	//~ LCD_Transmit(255);
-    LCD_Transmit((r1 & 0x0F));
+    LCD_TransmitDot((r1 & 0x0F));
     LCD_Transmit((r1 & 0xF0)>>4);
 	//~ LCD_Transmit(255);
     LCD_Transmit((r0 & 0x0F));
     LCD_Transmit((r0 & 0xF0)>>4);
 	//~ LCD_Transmit(255);
-    LCD_Transmit((i & 0x0F));
-    LCD_Transmit((i & 0xF0)>>4);
+    LCD_Transmit((TickCounter & 0x0F));
+    LCD_Transmit((TickCounter & 0xF0)>>4);
 
     //wdt_reset();
     //Delay1s();

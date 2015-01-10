@@ -38,7 +38,7 @@ void InitRFM69HWCommon()
         /*0x09*/{RegFrfLsb,0x00},
         /*0x18*/{RegLna,0x88},  //default 0x08 (200 Ohm), recommended 0x88 (50 Ohm)
         /*0x19*/{RegRxBw,0x42},
-        /*0x29*/{RegRssiThresh,220}, //default gain is 0xe4=228 (-Seisitivity/2) = -114dB
+        /*0x29*/{RegRssiThresh,228}, //default gain is 0xe4=228 (-Seisitivity/2) = -114dB
         /*0x2c*/{RegPreambleMsb,0x00}, //Preamble size msb = 0 default
         /*0x2d*/{RegPreambleLsb,0x03}, //Preamble size lsb = 3 default
         /*0x2e*/{RegSyncConfig,0x88},

@@ -33,6 +33,20 @@ void inline LCD_Load()
     PORTB ^= LCD_LOAD;  //Load data strobe
     PORTB ^= LCD_LOAD;
 }
+void LCD_TransmitDot(char cData)
+{
+    char tData = 0;
+    if (cData < sizeof(CHARTABLE)/sizeof(CHARTABLE[0]))
+    {
+        tData = CHARTABLE[cData];
+    }
+    
+    SPI_SetData(0x80);
+    SPI_OneClock();
+    SPI_Transmit(tData);
+    LCD_Load();
+
+}
 void LCD_Transmit(char cData)
 {
     char tData = 0;
@@ -41,7 +55,7 @@ void LCD_Transmit(char cData)
         tData = CHARTABLE[cData];
     }
     
-    SPI_SetData(0);
+    SPI_SetData(0x00);
     SPI_OneClock();
     SPI_Transmit(tData);
     LCD_Load();
