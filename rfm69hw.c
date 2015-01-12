@@ -27,8 +27,8 @@ void InitRFM69HWCommon()
     unsigned char i;
     const unsigned char CONFIG[][2] =
     {
-        /*0x01*/{RegOpMode,OPMODE_SEQUENCER_OFF|OPMODE_LISTENOFF|OPMODE_SLEEP},
-        /*0x02*/{RegDataModul,0x00},
+        /*0x01*/{RegOpMode,OPMODE_SEQUENCER_OFF|OPMODE_LISTEN_OFF|OPMODE_SLEEP},
+        /*0x02*/{RegDataModul,DATAMODUL_PACKET_MODE|DATAMODUL_FSK|DATAMODUL_NO_SHAPING},
         /*0x03*/{RegBitRateMsb,0x02},//BitRate
         /*0x04*/{RegBitRateLsb,0x40},
         /*0x05*/{RegFdevMsb,0x03},  //Frequency deviation

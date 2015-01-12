@@ -6,17 +6,6 @@
 
 #define RegFifo 0x00 //FIFO data input/output
 #define RegOpMode 0x01 //Operation mode register
-    #define OPMODE_SEQUENCER_ON 0x00 //
-    #define OPMODE_SEQUENCER_OFF 0x80 //
-    #define OPMODE_LISTENON 0x40 //Enables listen mode in standby mode
-    #define OPMODE_LISTENOFF 0x00 //Enables listen mode in standby mode
-    #define OPMODE_LISTENABORT 0x20 //Mask for operation mode
-    #define OPMODE_MODEMASK 0x1C //Sleep mode
-    #define OPMODE_SLEEP 0x00 //Sleep mode
-    #define OPMODE_STNDBY 0x04 //Standby mode
-    #define OPMODE_FS 0x08 //Frequency Synthesizer mode
-    #define OPMODE_TX 0x0C //Transmit mode
-    #define OPMODE_RX 0x10 //Receive mode
 #define RegDataModul 0x02
 #define RegBitRateMsb 0x03
 #define RegBitRateLsb 0x04
@@ -151,6 +140,55 @@
 #define RegReserved7D 0x7D
 #define RegReserved7E 0x7E
 #define RegReserved7F 0x7F
+
+/* Configuration registers' modes
+ *
+ */
+#define OPMODE_SEQUENCER_ON 0x00 //
+#define OPMODE_SEQUENCER_OFF 0x80 //
+#define OPMODE_LISTEN_ON 0x40 //Enables listen mode in standby mode
+#define OPMODE_LISTEN_OFF 0x00 //Enables listen mode in standby mode
+#define OPMODE_LISTEN_ABORT 0x20 //
+#define OPMODE_MODE_MASK 0x1C //Mask for operation mode
+#define OPMODE_SLEEP 0x00 //Sleep mode
+#define OPMODE_STNDBY 0x04 //Standby mode
+#define OPMODE_FS 0x08 //Frequency Synthesizer mode
+#define OPMODE_TX 0x0C //Transmit mode
+#define OPMODE_RX 0x10 //Receive mode
+//***********************************
+#define DATAMODUL_PACKET_MODE 0x00 //
+#define DATAMODUL_CONTINUOUS_SYNC_MODE 0x40 //
+#define DATAMODUL_CONTINUOUS_NOSYNC_MODE 0x60 //
+#define DATAMODUL_FSK 0x00 //
+#define DATAMODUL_OOK 0x08 //
+#define DATAMODUL_NO_SHAPING 0x00 //
+#define DATAMODUL_FSK_GAUS_BT10 0x01 //
+#define DATAMODUL_FSK_GAUS_BT05 0x02 //
+#define DATAMODUL_FSK_GAUS_BT03 0x03 //
+#define DATAMODUL_OOK_BR 0x01 //
+#define DATAMODUL_OOK_2BR 0x02 //
+//***********************************
+#define BITRATEMSB_1200 0x68
+#define BITRATELSB_1200 0x2B
+#define BITRATEMSB_2400 0x34
+#define BITRATELSB_2400 0x15
+#define BITRATEMSB_4800 0x1A
+#define BITRATELSB_4800 0x0B
+#define BITRATEMSB_9600 0x0D
+#define BITRATELSB_9600 0x05
+#define BITRATEMSB_19200 0x06
+#define BITRATELSB_19200 0x83
+#define BITRATEMSB_38400 0x03
+#define BITRATELSB_38400 0x41
+#define BITRATEMSB_76800 0x01
+#define BITRATELSB_76800 0xA1
+#define BITRATEMSB_153600 0x00
+#define BITRATELSB_153600 0xD0
+
+#define BITRATEMSB_57600 0x02
+#define BITRATELSB_57600 0x2C
+#define BITRATEMSB_115200 0x01
+#define BITRATELSB_115200 0x16
 
 unsigned char ReadRFM69HW(unsigned char);
 unsigned char WriteRFM69HW(unsigned char, unsigned char);
