@@ -10,7 +10,7 @@
 DEVICE  = attiny85
 F_CPU   = 8000000
 FUSE_L  = 0xE2
-FUSE_H  = 0xDD
+FUSE_H  = 0xDE
 LOCK = 0x03
 AVRDUDE = avrdude -c usbasp -p $(DEVICE) # edit this line for your programmer
 
@@ -72,9 +72,9 @@ OBJECTS = $(SOURCES:.c=.o)
 #        | +------------------ CKOUT (clock output on CKOUT pin -> disabled)
 #        +-------------------- CKDIV8 (divide clock by 8 -> don't divide)
 # ATTiny*5 FUSE_H (Fuse high byte):
-# 0xdd = 1 1 0 1   1 1 0 1
+# 0xce = 1 1 0 0   1 1 0 1
 #        ^ ^ ^ ^   ^ \-+-/
-#        | | | |   |   +------ BODLEVEL 2..0 (brownout trigger level -> 2.7V)
+#        | | | |   |   +------ BODLEVEL 2..0 (brownout trigger level -> 1.8V)
 #        | | | |   +---------- EESAVE (preserve EEPROM on Chip Erase -> not preserved)
 #        | | | +-------------- WDTON (watchdog timer always on -> disable)
 #        | | +---------------- SPIEN (enable serial programming -> enabled)
@@ -120,7 +120,7 @@ help:
 	@echo "make ? ......... to show this help screen"
 
 #all: clean hex erase fuse flash #lock
-all: clean hex erase flash
+all: clean hex erase fuse flash
 
 hex: $(EXEC)
 	avr-objcopy -j .text -j .data -O ihex $(EXEC) $(HEX)
