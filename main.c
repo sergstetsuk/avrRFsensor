@@ -79,7 +79,7 @@ ISR(WDT_vect)
     DDRB |= (1<<DDB4);  //init CS pins for devices
     PORTB = (1<<PORTB4); //CS FOR RFM69HW 1 = not selected
 
-#if 0
+#if 1
     if (TickCounter == 0x01)
     {
         InitRFM69HWtx();

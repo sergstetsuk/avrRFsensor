@@ -74,5 +74,4 @@ void InitRFM69HWtx()
 {
     InitRFM69HWCommon();
     WriteRFM69HW(RegAutoModes,0b01011011); //enter fifolevel,exit packetsent, interstate tx
-    WriteRFM69HW(RegOpMode,OPMODE_TX);
 }
