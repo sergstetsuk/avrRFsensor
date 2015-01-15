@@ -1,17 +1,17 @@
-Cmp-Mod V01 Created by CvPcb (22-Jun-2014 BZR 4027)-stable date = чт, 15-січ-2015 10:20:01 +0200
+Cmp-Mod V01 Created by CvPcb (22-Jun-2014 BZR 4027)-stable date = чт, 15-січ-2015 18:31:51 +0200
 
 BeginCmp
 TimeStamp = /4F549CD9;
 Reference = C1;
 ValeurCmp = 22pF;
-IdModule  = SM0603;
+IdModule  = SM0805;
 EndCmp
 
 BeginCmp
 TimeStamp = /4F549CE0;
 Reference = C2;
 ValeurCmp = 22pF;
-IdModule  = SM0603;
+IdModule  = SM0805;
 EndCmp
 
 BeginCmp
@@ -36,6 +36,13 @@ IdModule  = SOD80;
 EndCmp
 
 BeginCmp
+TimeStamp = /54B7D045;
+Reference = D3;
+ValeurCmp = 3V6;
+IdModule  = SOD80;
+EndCmp
+
+BeginCmp
 TimeStamp = /4E04E7AC;
 Reference = PROG1;
 ValeurCmp = USB_FLAT;
@@ -46,35 +53,70 @@ BeginCmp
 TimeStamp = /4B61D88E;
 Reference = R1;
 ValeurCmp = 68;
-IdModule  = SM0603;
+IdModule  = SM0805;
 EndCmp
 
 BeginCmp
 TimeStamp = /4B61D891;
 Reference = R2;
 ValeurCmp = 68;
-IdModule  = SM0603;
+IdModule  = SM0805;
 EndCmp
 
 BeginCmp
 TimeStamp = /4B61D89E;
 Reference = R3;
 ValeurCmp = 10k;
-IdModule  = SM0603;
+IdModule  = SM0805;
 EndCmp
 
 BeginCmp
 TimeStamp = /4B61D898;
 Reference = R4;
 ValeurCmp = 2.2k;
-IdModule  = SM0603;
+IdModule  = SM0805;
 EndCmp
 
 BeginCmp
-TimeStamp = /4E03B504;
+TimeStamp = /54B7D03F;
+Reference = R5;
+ValeurCmp = 25;
+IdModule  = SM0805;
+EndCmp
+
+BeginCmp
+TimeStamp = /54B7CD7C;
+Reference = R6;
+ValeurCmp = 10k;
+IdModule  = SM0805;
+EndCmp
+
+BeginCmp
+TimeStamp = /54B7CDBD;
+Reference = R7;
+ValeurCmp = 10k;
+IdModule  = SM0805;
+EndCmp
+
+BeginCmp
+TimeStamp = /54B7CDC3;
+Reference = R8;
+ValeurCmp = 10k;
+IdModule  = SM0805;
+EndCmp
+
+BeginCmp
+TimeStamp = /54B7A49D;
 Reference = U1;
-ValeurCmp = ATTINY85-20SU;
-IdModule  = SO8;
+ValeurCmp = ATMEGA168PA-A;
+IdModule  = TQFP32;
+EndCmp
+
+BeginCmp
+TimeStamp = /54B7BF4D;
+Reference = U2;
+ValeurCmp = RFM69;
+IdModule  = RFM69;
 EndCmp
 
 BeginCmp
