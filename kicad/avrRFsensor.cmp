@@ -1,0 +1,94 @@
+Cmp-Mod V01 Created by CvPcb (22-Jun-2014 BZR 4027)-stable date = чт, 15-січ-2015 10:20:01 +0200
+
+BeginCmp
+TimeStamp = /4F549CD9;
+Reference = C1;
+ValeurCmp = 22pF;
+IdModule  = SM0603;
+EndCmp
+
+BeginCmp
+TimeStamp = /4F549CE0;
+Reference = C2;
+ValeurCmp = 22pF;
+IdModule  = SM0603;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B61D8DC;
+Reference = C3;
+ValeurCmp = 4.7uF;
+IdModule  = SM0805;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B61D877;
+Reference = D1;
+ValeurCmp = 3V6;
+IdModule  = SOD80;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B61D87E;
+Reference = D2;
+ValeurCmp = 3V6;
+IdModule  = SOD80;
+EndCmp
+
+BeginCmp
+TimeStamp = /4E04E7AC;
+Reference = PROG1;
+ValeurCmp = USB_FLAT;
+IdModule  = USB_FLAT;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B61D88E;
+Reference = R1;
+ValeurCmp = 68;
+IdModule  = SM0603;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B61D891;
+Reference = R2;
+ValeurCmp = 68;
+IdModule  = SM0603;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B61D89E;
+Reference = R3;
+ValeurCmp = 10k;
+IdModule  = SM0603;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B61D898;
+Reference = R4;
+ValeurCmp = 2.2k;
+IdModule  = SM0603;
+EndCmp
+
+BeginCmp
+TimeStamp = /4E03B504;
+Reference = U1;
+ValeurCmp = ATTINY85-20SU;
+IdModule  = SO8;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B61E2B2;
+Reference = USB1;
+ValeurCmp = USB_FLAT;
+IdModule  = USB_A_PLUG_SMT;
+EndCmp
+
+BeginCmp
+TimeStamp = /4F549CBC;
+Reference = X1;
+ValeurCmp = 18MHz HC49USSMD;
+IdModule  = Q_49U3HMS;
+EndCmp
+
+EndListe
