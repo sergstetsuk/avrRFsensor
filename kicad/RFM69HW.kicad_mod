@@ -60,8 +60,8 @@
     (layers F.Cu F.Mask)
   )
   (model smd/tqfp32.wrl
-    (at (xyz 0 0 0))
-    (scale (xyz 1 1 1))
+    (at (xyz 0.37 -0.31 0))
+    (scale (xyz 2.2 1.7 1))
     (rotate (xyz 0 0 0))
   )
 )

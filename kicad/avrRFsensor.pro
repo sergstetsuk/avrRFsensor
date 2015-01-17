@@ -1,9 +1,5 @@
-update=чт, 15-січ-2015 18:32:17 +0200
-last_client=pcbnew
-[general]
-version=1
-RootSch=usbasp.sch
-BoardNm=usbasp.brd
+update=сб, 17-січ-2015 18:46:13 +0200
+last_client=kicad
 [eeschema]
 version=1
 LibDir=
@@ -55,8 +51,8 @@ LastNetListRead=avrRFsensor.net
 UseCmpFile=1
 PadDrill=0.000000000000
 PadDrillOvalY=0.000000000000
-PadSizeH=3.000000000000
-PadSizeV=1.200000000000
+PadSizeH=1.000000000000
+PadSizeV=1.000000000000
 PcbTextSizeV=2.032000000000
 PcbTextSizeH=1.524000000000
 PcbTextThickness=0.304800000000
@@ -82,3 +78,6 @@ LibName9=led
 LibName10=dip_sockets
 LibName11=RFM69
 LibName12=SOD80
+LibName13=pin_1_smd_1mm
+[general]
+version=1

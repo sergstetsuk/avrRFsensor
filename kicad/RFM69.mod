@@ -1,11 +1,11 @@
-PCBNEW-LibModule-V1  чт, 15-січ-2015 15:29:28 +0200
+PCBNEW-LibModule-V1  сб, 17-січ-2015 18:26:00 +0200
 # encoding utf-8
 Units mm
 $INDEX
 RFM69
 $EndINDEX
 $MODULE RFM69
-Po 0 0 0 15 54B7C08A 00000000 ~~
+Po 0 0 0 15 54BA8B66 00000000 ~~
 Li RFM69
 Sc 0
 AR /4E04E7AC
@@ -130,8 +130,8 @@ Po 18.75 1
 $EndPAD
 $SHAPE3D
 Na "smd/tqfp32.wrl"
-Sc 1 1 1
-Of 0 0 0
+Sc 2.2 1.7 1
+Of 0.37 -0.31 0
 Ro 0 0 0
 $EndSHAPE3D
 $EndMODULE RFM69
