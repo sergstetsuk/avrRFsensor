@@ -62,6 +62,7 @@ int main(void)
         WDTCR |= (1<<WDE) | (1<<WDIE);  //enable watchdog + enable interrupt from watchdog 
         sleep_enable();
         sleep_bod_disable();
+        DDRB = 0;
         sei();
         sleep_cpu();
         sleep_disable();
