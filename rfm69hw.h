@@ -99,9 +99,9 @@
 #define RegReserved57 0x57
 #define RegTestLna 0x58
 #define RegReserved59 0x59
-#define RegTestPa2 0x5A
+#define RegTestPa1 0x5A
 #define RegReserved5B 0x5B
-#define RegTestPa1 0x5C
+#define RegTestPa2 0x5C
 #define RegReserved5D 0x5D
 #define RegReserved5E 0x5E
 #define RegReserved5F 0x5F
