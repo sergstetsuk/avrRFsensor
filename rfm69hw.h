@@ -581,22 +581,22 @@
 #define SYNCCONFIG_TOL_7 0x07
 //***********************************
 // RegPacketConfig1
-#define PCONF1_FORMAT_FIXED 0x00  // Default
-#define PCONF1_FORMAT_VARIABLE 0x80
+#define PACKET1_FORMAT_FIXED 0x00  // Default
+#define PACKET1_FORMAT_VARIABLE 0x80
 
-#define PCONF1_DCFREE_OFF 0x00  // Default
-#define PCONF1_DCFREE_MANCHESTER 0x20
-#define PCONF1_DCFREE_WHITENING 0x40
+#define PACKET1_DCFREE_OFF 0x00  // Default
+#define PACKET1_DCFREE_MANCHESTER 0x20
+#define PACKET1_DCFREE_WHITENING 0x40
 
-#define PCONF1_CRC_ON 0x10  // Default
-#define PCONF1_CRC_OFF 0x00
+#define PACKET1_CRC_ON 0x10  // Default
+#define PACKET1_CRC_OFF 0x00
 
-#define PCONF1_CRCAUTOCLEAR_ON 0x00  // Default
-#define PCONF1_CRCAUTOCLEAR_OFF 0x08
+#define PACKET1_CRCAUTOCLEAR_ON 0x00  // Default
+#define PACKET1_CRCAUTOCLEAR_OFF 0x08
 
-#define PCONF1_ADDRFILTER_OFF 0x00  // Default
-#define PCONF1_ADDRFILTER_NODE 0x02
-#define PCONF1_ADDRFILTER_NODEBCAST 0x04
+#define PACKET1_ADDRFILTER_OFF 0x00  // Default
+#define PACKET1_ADDRFILTER_NODE 0x02
+#define PACKET1_ADDRFILTER_NODEBCAST 0x04
 //***********************************
 // RegAutoModes
 #define AUTOMODES_ENTER_OFF 0x00  // Default
@@ -653,7 +653,8 @@
 #define TEMP1_MEAS_RUNNING 0x04
 //***********************************
 // RegTestLna
-#define TESTLNA_SENSITIVITY_BOOST
+#define TESTLNA_SENSITIVITY_HIGH 0x2D
+#define TESTLNA_SENSITIVITY_NORMAL 0x1B
 //***********************************
 // RegTestPa1
 #define TESTPA1_NORMAL 0x55

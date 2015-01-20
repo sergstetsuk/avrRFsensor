@@ -159,6 +159,8 @@ novcc:
 clean:
 	rm -f $(EXEC) $(HEX) $(OBJECTS) $(SOURCES:.c=.c.lst)
 
+rebuild: clean hex
+
 
 # Main target
 $(EXEC): $(OBJECTS)
@@ -175,4 +177,4 @@ $(EXEC): $(OBJECTS)
 # characters are not always preserved on Windows. To ensure WinAVR
 # compatibility define the file type manually.
 
-.DEFAULT_GOAL := hex
+.DEFAULT_GOAL := rebuild
