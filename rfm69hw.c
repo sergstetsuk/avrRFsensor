@@ -29,30 +29,30 @@ void InitRFM69HWCommon()
     {
         /*0x01*/{RegOpMode,OPMODE_SEQUENCER_OFF|OPMODE_LISTEN_OFF|OPMODE_SLEEP},
         /*0x02*/{RegDataModul,DATAMODUL_PACKET_MODE|DATAMODUL_FSK|DATAMODUL_NO_SHAPING},
-        /*0x03*/{RegBitRateMsb,0x02},//BitRate
-        /*0x04*/{RegBitRateLsb,0x40},
-        /*0x05*/{RegFdevMsb,0x03},  //Frequency deviation
-        /*0x06*/{RegFdevLsb,0x33},
-        /*0x07*/{RegFrfMsb,0x6c},   //Frequency 433 MHz
-        /*0x08*/{RegFrfMid,0x40},
-        /*0x09*/{RegFrfLsb,0x00},
-        /*0x18*/{RegLna,0x88},  //default 0x08 (200 Ohm), recommended 0x88 (50 Ohm)
-        /*0x19*/{RegRxBw,0x42},
-        /*0x29*/{RegRssiThresh,228}, //default gain is 0xe4=228 (-Seisitivity/2) = -114dB
+        /*0x03*/{RegBitRateMsb,BITRATEMSB_1200},//BitRate WAS 0x02
+        /*0x04*/{RegBitRateLsb,BITRATELSB_1200},   //WAS 0x40
+        /*0x05*/{RegFdevMsb,FDEVMSB_50000},  //Frequency deviation
+        /*0x06*/{RegFdevLsb,FDEVLSB_50000},
+        /*0x07*/{RegFrfMsb,FRFMSB_433},   //Frequency 433 MHz
+        /*0x08*/{RegFrfMid,FRFMID_433},
+        /*0x09*/{RegFrfLsb,FRFLSB_433},
+        /*0x18*/{RegLna,LNA_ZIN_200|LNA_CURRENTGAIN},  //LNA settings 200 Ohm
+        /*0x19*///{RegRxBw,0x42}, /default
+        /*0x29*///{RegRssiThresh,228}, //default gain is 0xe4=228 (-Seisitivity/2) = -114dB
         /*0x2c*/{RegPreambleMsb,0x00}, //Preamble size msb = 0 default
         /*0x2d*/{RegPreambleLsb,0x03}, //Preamble size lsb = 3 default
-        /*0x2e*/{RegSyncConfig,0x88},
-        /*0x2f*/{RegSyncValue1, 0x2d }, //attempt to make this compatible with sync1 byte of RFM12B lib
-        /*0x30*/{RegSyncValue2, 0xe8 }, //
-        /*0x37*/{RegPacketConfig1,0x10}, //default
+        /*0x2e*/{RegSyncConfig,SYNCCONGIG_SYNC_ON|SYNCCONFIG_SYNC_SIZE_2},
+        /*0x2f*/{RegSyncValue1, 0x2D }, //attempt to make this compatible with sync1 byte of RFM12B lib
+        /*0x30*/{RegSyncValue2, 0xE8 }, //
+        /*0x37*/{RegPacketConfig1,PCONF1_FORMAT_FIXED|PCONF1_DCFREE_OFF|PCONF1_CRC_ON|PCONF1_ADDRFILTER_OFF}, //default
         /*0x38*/{RegPayloadLength,0x08},
-        /*0x3C*/{RegFifoThresh,0x87},
-        /*0x3d*/{RegPacketConfig2, 0x00}, //RXRESTARTDELAY must match transmitter PA ramp-down time (bitrate dependent)
-        /*0x6f*/{RegTestDagc, 0x30}, // run DAGC continuously in RX mode, recommended default for AfcLowBetaOn=0
-            /*0x11*/{RegPaLevel,0x7F},  //20dB
-            /*0x13*/{RegOcp,0x0F},  //20dB
-            /*0x5a*/{RegTestPa1,0x5D},  //20dB
-            /*0x5c*/{RegTestPa2,0x7C},  //20dB
+        /*0x3C*/{RegFifoThresh,FIFOTHRESH_TXSTART_FIFONOTEMPTY|0x07/*FIFO LEVEL VALUE*/}, //Fifo level+1 = packet size
+        /*0x3d*/{RegPacketConfig2, PACKET2_AUTORXRESTART_ON|PACKET2_AES_OFF}, //RXRESTARTDELAY must match transmitter PA ramp-down time (bitrate dependent)
+        /*0x6f*/{RegTestDagc, TESTDAGC_IMPROVED_LOWBETA0}, // run DAGC continuously in RX mode, recommended default for AfcLowBetaOn=0
+            /*0x11*/{RegPaLevel,PALEVEL_PA0_ON|PALEVEL_PA1_ON|PALEVEL_PA2_ON|PALEVEL_OUTPUTPOWER_11111},  //20dB
+            /*0x13*/{RegOcp,OCP_OFF},  //20dB
+            /*0x5a*/{RegTestPa1,TESTPA1_20dBm},  //20dB
+            /*0x5c*/{RegTestPa2,TESTPA2_20dBm},  //20dB
         /*end   */ {255,0}
     };
 
