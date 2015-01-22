@@ -59,9 +59,9 @@ int main(void)
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);
     for(;;)
     {
-        WDTCR |= (1<<WDE) | (1<<WDIE);  //enable watchdog + enable interrupt from watchdog 
+        WDTCSR |= (1<<WDE) | (1<<WDIE);  //enable watchdog + enable interrupt from watchdog for tiny WDTCR
         sleep_enable();
-        sleep_bod_disable();
+        //debug off sleep_bod_disable();
         DDRB = 0;
         sei();
         sleep_cpu();

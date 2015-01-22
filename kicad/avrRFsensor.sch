@@ -37,7 +37,7 @@ $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
 Title ""
-Date "17 jan 2015"
+Date "21 jan 2015"
 Rev ""
 Comp ""
 Comment1 ""
@@ -278,7 +278,7 @@ Wire Wire Line
 Text GLabel 5500 2700 2    60   Input ~ 0
 MISO
 Text GLabel 1600 4100 2    60   Input ~ 0
-MISO_USB
+D-_ANY
 Wire Wire Line
 	1500 4100 1600 4100
 Text GLabel 1300 2700 2    60   Input ~ 0
@@ -288,7 +288,7 @@ Wire Wire Line
 Text GLabel 5500 2800 2    60   Input ~ 0
 SCK
 Text GLabel 1600 3850 2    60   Input ~ 0
-SCK_USB
+D+_INT0
 Wire Wire Line
 	1500 3850 1600 3850
 Text GLabel 1450 5600 2    60   Input ~ 0
@@ -527,9 +527,9 @@ Wire Wire Line
 Wire Wire Line
 	5300 3650 5500 3650
 Text GLabel 5500 4100 2    60   Input ~ 0
-SCK_USB
+D+_INT0
 Text GLabel 5500 4000 2    60   Input ~ 0
-MISO_USB
+D-_ANY
 Wire Wire Line
 	5500 4100 5300 4100
 Wire Wire Line
