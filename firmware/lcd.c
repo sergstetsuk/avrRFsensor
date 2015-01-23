@@ -5,22 +5,22 @@
 #include "lcd.h"
 
 const unsigned char CHARTABLE[] PROGMEM = {
-      0b01111011,//0b11011110, //0
-      0b01100000,//0b00000110, //1
-      0b00110111,//0b11101100, //2
-      0b01110101,//0b10101110, //3
-      0b01101100,//0b00110110, //4
-      0b01011101,//0b10111010, //5
-      0b01011111,//0b11111010, //6
-      0b01110000,//0b00001110, //7
-      0b01111111,//0b11111110, //8
-      0b01111101,//0b10111110, //9
-      0b01111110,//0b01111110, //A
-      0b01001111,//0b11110010, //B
-      0b00011011,//0b11011000, //C
-      0b01100111,//0b11100110, //D
-      0b00011111,//0b11111000, //E
-      0b00011110,//0b01111000, //F
+      0b01111011, //0
+      0b01100000, //1
+      0b00110111, //2
+      0b01110101, //3
+      0b01101100, //4
+      0b01011101, //5
+      0b01011111, //6
+      0b01110000, //7
+      0b01111111, //8
+      0b01111101, //9
+      0b01111110, //A
+      0b01001111, //B
+      0b00011011, //C
+      0b01100111, //D
+      0b00011111, //E
+      0b00011110, //F
                       };
 
 void inline LCD_Init()
@@ -34,15 +34,21 @@ void inline LCD_Load()
     PORTB ^= LCD_LOAD;  //Load data strobe
     PORTB ^= LCD_LOAD;
 }
-void LCD_TransmitDot(char cData)
+void LCD_TransmitDot(char cData, char isdot)
 {
     char tData = 0;
     if (cData < sizeof(CHARTABLE)/sizeof(CHARTABLE[0]))
     {
-        tData = CHARTABLE[cData];
+        tData = pgm_read_byte(&CHARTABLE[cData]);
     }
-    
-    SPI_SetData(0x80);
+    if( isdot & LCD_DOT){
+        SPI_SetData(0x80);
+    } else {
+        SPI_SetData(0x00);
+    }
+    if( isdot & LCD_HASH){
+        tData |= 0x80;
+    }
     SPI_OneClock();
     SPI_Transmit(tData);
     LCD_Load();

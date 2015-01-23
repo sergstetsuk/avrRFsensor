@@ -7,9 +7,10 @@
 # License: GNU GPL v2 (see License.txt), GNU GPL v3 or proprietary (CommercialLicense.txt)
 # This Revision: $Id: Makefile 1 2012.05.28 20:14 cs $
 
-#DEVICE  = attiny85
-DEVICE  = atmega168
-F_CPU   = 18000000
+DEVICE  = attiny85
+F_CPU   = 8000000
+#DEVICE  = atmega168
+#F_CPU   = 18000000
 FUSE_L  = 0xE2
 FUSE_H  = 0xDE
 LOCK = 0x03
@@ -130,19 +131,19 @@ hex: $(EXEC)
 
 # rule for programming fuse bits:
 erase:
-	$(AVRDUDE) -B 3 -e
+	$(AVRDUDE) -B 4 -e
 # rule for programming fuse bits:
 fuse:
 	$(ERR)
 	@[ "$(FUSE_H)" != "" -a "$(FUSE_L)" != "" ] || \
 		{ echo "*** Edit Makefile and choose values for FUSE_L and FUSE_H!"; exit 1; }
-	$(AVRDUDE) -B 3 -U hfuse:w:$(FUSE_H):m -U lfuse:w:$(FUSE_L):m
+	$(AVRDUDE) -B 4 -U hfuse:w:$(FUSE_H):m -U lfuse:w:$(FUSE_L):m
 
 # rule for programming lock bits:
 lock:
 	@[ "$(LOCK)" != "" ] || \
 		{ echo "*** Edit Makefile and choose value for LOCK!"; exit 1; }
-	$(AVRDUDE) -B 3 -U lock:w:$(LOCK):m
+	$(AVRDUDE) -B 4 -U lock:w:$(LOCK):m
 
 # rule for uploading firmware:
 flash: $(HEX)
@@ -150,7 +151,7 @@ flash: $(HEX)
 
 # rule for reading flash and eeprom:
 read:
-	$(AVRDUDE) -B 3 -U eeprom:r:eeprom.hex:i -U flash:r:flash.hex:i
+	$(AVRDUDE) -B 4 -U eeprom:r:eeprom.hex:i -U flash:r:flash.hex:i
 
 # rule for deleting dependent files (those which can be built by Make):
 clean:
@@ -161,9 +162,11 @@ rebuild: clean hex
 
 # Main target
 $(EXEC): $(OBJECTS)
-	$(CC) $(OBJECTS) -o $(EXEC)
+	$(CC) $(OBJECTS)  -Wl,-Map=rfsensor.map -o $(EXEC)
 
 # To obtain object files
+main.o: main.c
+	$(CC) -c $< -o $@ -Wa,-ahlms=$<.lst
 %.o: %.c %.h
 	$(CC) -c $< -o $@ -Wa,-ahlms=$<.lst
 .S.o:

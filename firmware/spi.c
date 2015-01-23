@@ -23,11 +23,12 @@ void inline SPI_OneClock()
 void inline SPI_Init()
 {
 #ifdef __AVR_ATtiny85__
-    //!PORTB &= ~((1<<PORTB2)|(1<<PORTB1));
+    PORTB |= (1<<PORTB0)|(1<<PORTB1)|(1<<PORTB2);
     DDRB &= ~(1<<DDB0);             //tiny Configure DI pin as input
     DDRB |= (1<<DDB2)|(1<<DDB1);    //tiny Configure SCK & DO pins as outputs
     USICR = USICR_DEF;  //tiny
 #else
+    PORTB |= (1<<DDB3)|(1<<DDB4)|(1<<DDB5);
     DDRB &= ~(1<<DDB4);             //mega Configure DI pin as input
     DDRB |= (1<<DDB3)|(1<<DDB5);    //mega Configure SCK & DO pins as outputs
 #endif
