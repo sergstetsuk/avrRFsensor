@@ -1,9 +1,10 @@
 #include <avr/io.h>
+#include <avr/pgmspace.h>
 
 #include "spi.h"
 #include "lcd.h"
 
-const unsigned char CHARTABLE[] = {
+const unsigned char CHARTABLE[] PROGMEM = {
       0b01111011,//0b11011110, //0
       0b01100000,//0b00000110, //1
       0b00110111,//0b11101100, //2
@@ -52,7 +53,7 @@ void LCD_Transmit(char cData)
     char tData = 0;
     if (cData < sizeof(CHARTABLE)/sizeof(CHARTABLE[0]))
     {
-        tData = CHARTABLE[cData];
+        tData = pgm_read_byte(&CHARTABLE[cData]);
     }
     
     SPI_SetData(0x00);

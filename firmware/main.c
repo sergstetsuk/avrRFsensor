@@ -27,24 +27,11 @@
 #include "lcd.h"
 #include "rfm69hw.h"
 static volatile unsigned int TickCounter;
-void Delay1s(void)
-{
-    volatile unsigned int cnt,cnt1;
-    for (cnt1 = 0; cnt1 < 10; cnt1++)
-    {
-        wdt_reset();
-        for (cnt = 0; cnt < 55555; cnt++); //~1sec Delay on a 1MHz clock
-    }
-}
-
 
 int main(void)
 {
     wdt_enable(WDTO_1S);
-    /* Even if you don't use the watchdog, turn it off here. On newer devices,
-     * the status of the watchdog (on/off, period) is PRESERVED OVER RESET!
-     */
-    TickCounter = 0;
+    //TickCounter = 0; //not needed as in AVR all is 0, especially global and static vars
     /*debug code to indicate restart*/
     SPI_Init(); //init spi interface
     LCD_Init(); //init lcd device
@@ -59,10 +46,9 @@ int main(void)
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);
     for(;;)
     {
-        WDTCSR |= (1<<WDE) | (1<<WDIE);  //enable watchdog + enable interrupt from watchdog for tiny WDTCR
         sleep_enable();
         //debug off sleep_bod_disable();
-        DDRB = 0;
+        DDRB = 0; //disable pins as outputs for saving energy
         sei();
         sleep_cpu();
         sleep_disable();
@@ -181,7 +167,11 @@ ISR(WDT_vect)
     LCD_Transmit((TickCounter & 0x0F));
     LCD_Transmit((TickCounter & 0xF0)>>4);
 
-    //wdt_reset();
-    //Delay1s();
+
+#ifdef WDTCR //re-enable WDT for interrupt+reset
+        WDTCR |= (1<<WDE) | (1<<WDIE);  //enable watchdog + enable interrupt on watchdog
+#else
+        WDTCSR |= (1<<WDE) | (1<<WDIE);  //enable watchdog + enable interrupt on watchdog
+#endif
 }
 /* ------------------------------------------------------------------------- */

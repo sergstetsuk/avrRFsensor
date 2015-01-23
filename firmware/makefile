@@ -7,8 +7,9 @@
 # License: GNU GPL v2 (see License.txt), GNU GPL v3 or proprietary (CommercialLicense.txt)
 # This Revision: $Id: Makefile 1 2012.05.28 20:14 cs $
 
+#DEVICE  = attiny85
 DEVICE  = atmega168
-F_CPU   = 8000000
+F_CPU   = 18000000
 FUSE_L  = 0xE2
 FUSE_H  = 0xDE
 LOCK = 0x03
@@ -124,7 +125,7 @@ all: clean hex erase fuse flash
 
 hex: $(EXEC)
 	avr-objcopy -j .text -j .data -O ihex $(EXEC) $(HEX)
-	avr-size $(HEX)
+	avr-size $(EXEC)
 	$(ERR)
 
 # rule for programming fuse bits:
@@ -147,17 +148,13 @@ lock:
 flash: $(HEX)
 	$(AVRDUDE) -D -U flash:w:$(HEX):i
 
-# rule for turn on vcc:
-vcc:
-	$(AVRDUDE) -D -E vcc
-
-# rule for turn off vcc:
-novcc:
-	$(AVRDUDE) -D -E novcc
+# rule for reading flash and eeprom:
+read:
+	$(AVRDUDE) -B 3 -U eeprom:r:eeprom.hex:i -U flash:r:flash.hex:i
 
 # rule for deleting dependent files (those which can be built by Make):
 clean:
-	rm -f $(EXEC) $(HEX) $(OBJECTS) $(SOURCES:.c=.c.lst)
+	rm -f $(EXEC) $(HEX) $(OBJECTS) $(SOURCES:.c=.c.lst) $(EXEC:.elf=.map)
 
 rebuild: clean hex
 

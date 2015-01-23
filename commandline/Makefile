@@ -12,7 +12,7 @@
 # Use the following 3 lines on Unix and Mac OS X:
 USBFLAGS=   `libusb-config --cflags`
 USBLIBS=    `libusb-config --libs`
-EXE_SUFFIX=
+EXE_SUFFIX= .a
 
 # Use the following 3 lines on Windows and comment out the 3 above:
 #USBFLAGS=
