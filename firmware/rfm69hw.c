@@ -38,9 +38,9 @@ void InitRFM69HWCommon()
         /*0x09*/{RegFrfLsb,FRFLSB_433},
         /*0x18*/{RegLna,LNA_ZIN_200|LNA_CURRENTGAIN|LNA_GAINSELECT_AUTO},  //LNA settings 200 Ohm
         /*0x19*/{RegRxBw,0x42}, //default
-        /*0x29*/{RegRssiThresh,228}, //default gain is 0xe4=228 (-Seisitivity/2) = -114dB
+        /*0x29*/{RegRssiThresh,160}, //default gain is 0xe4=228 (-Seisitivity/2) = -114dB
         /*0x2c*/{RegPreambleMsb,0x00}, //Preamble size msb = 0 default
-        /*0x2d*/{RegPreambleLsb,0x08}, //Preamble size lsb = 8 default
+        /*0x2d*/{RegPreambleLsb,0x03}, //Preamble size lsb = 3 default
         /*0x2e*/{RegSyncConfig,SYNCCONGIG_SYNC_ON|SYNCCONFIG_SYNC_SIZE_2},
         /*0x2f*/{RegSyncValue1, 0x2D }, //attempt to make this compatible with sync1 byte of RFM12B lib
         /*0x30*/{RegSyncValue2, 0xE8 }, //
@@ -49,10 +49,10 @@ void InitRFM69HWCommon()
         /*0x3C*/{RegFifoThresh,FIFOTHRESH_TXSTART_FIFONOTEMPTY|0x0F/*FIFO LEVEL VALUE*/}, //Fifo level+1 = packet size
         /*0x3d*/{RegPacketConfig2, PACKET2_AUTORXRESTART_OFF|PACKET2_AES_OFF}, //RXRESTARTDELAY must match transmitter PA ramp-down time (bitrate dependent)
         /*0x6f*/{RegTestDagc, TESTDAGC_IMPROVED_LOWBETA0}, // run DAGC continuously in RX mode, recommended default for AfcLowBetaOn=0
-            //~ /*0x11*/{RegPaLevel,PALEVEL_PA0_OFF|PALEVEL_PA1_ON|PALEVEL_PA2_ON|PALEVEL_OUTPUTPOWER_11111},  //20dB
-            //~ /*0x13*/{RegOcp,OCP_OFF},  //20dB
-            //~ /*0x5a*/{RegTestPa1,TESTPA1_20dBm},  //20dB
-            //~ /*0x5c*/{RegTestPa2,TESTPA2_20dBm},  //20dB
+            /*0x11*/{RegPaLevel,PALEVEL_PA0_OFF|PALEVEL_PA1_ON|PALEVEL_PA2_ON|PALEVEL_OUTPUTPOWER_11111},  //20dB
+            /*0x13*/{RegOcp,OCP_OFF},  //20dB
+            /*0x5a*/{RegTestPa1,TESTPA1_20dBm},  //20dB
+            /*0x5c*/{RegTestPa2,TESTPA2_20dBm},  //20dB
         /*end   */ {255,0}
     };
 
@@ -66,13 +66,15 @@ void InitRFM69HWCommon()
 void InitRFM69HWrx()
 {
     InitRFM69HWCommon();
-    WriteRFM69HW(RegAutoModes,AUTOMODES_ENTER_CRCOK
-                             |AUTOMODES_EXIT_FIFOEMPTY
-                             |AUTOMODES_INTERMEDIATE_SLEEP); //enter crcok,exit fifoempty, interstate sleep
+    //~ WriteRFM69HW(RegAutoModes,AUTOMODES_ENTER_CRCOK
+                             //~ |AUTOMODES_EXIT_FIFOEMPTY
+                             //~ |AUTOMODES_INTERMEDIATE_SLEEP); //enter crcok,exit fifoempty, interstate sleep
     //WriteRFM69HW(RegOpMode,OPMODE_RX);
+    WriteRFM69HW(RegOpMode,OPMODE_STNDBY|OPMODE_SEQUENCER_ON);
+    WriteRFM69HW(RegRxTimeout2,/*TimeoutRxStart*/0xFF);
     /*0x0D*/WriteRFM69HW(RegListen1,LISTEN1_RESOL_IDLE_262000|LISTEN1_RESOL_RX_262000|LISTEN1_CRITERIA_RSSI|LISTEN1_END_10);  //
     /*0x0E*/WriteRFM69HW(RegListen2,/*LISTEN2_COEFIDLE*/0x10);  //
-    /*0x0F*/WriteRFM69HW(RegListen3,/*LISTEN2_COEFRX*/0x10);  //
+    /*0x0F*/WriteRFM69HW(RegListen3,/*LISTEN2_COEFRX*/0x20);  //
     WriteRFM69HW(RegOpMode,OPMODE_LISTEN_ON|OPMODE_STNDBY|OPMODE_SEQUENCER_ON);
     
 }

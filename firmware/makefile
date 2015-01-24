@@ -155,7 +155,7 @@ read:
 
 # rule for deleting dependent files (those which can be built by Make):
 clean:
-	rm -f $(EXEC) $(HEX) $(OBJECTS) $(SOURCES:.c=.c.lst) $(EXEC:.elf=.map)
+	rm -f *.elf *.hex *.o *.lst *.map
 
 rebuild: clean hex
 

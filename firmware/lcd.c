@@ -39,7 +39,7 @@ void LCD_TransmitDot(char cData, char isdot)
     char tData = 0;
     if (cData < sizeof(CHARTABLE)/sizeof(CHARTABLE[0]))
     {
-        tData = pgm_read_byte(&CHARTABLE[cData]);
+        tData = pgm_read_byte(&CHARTABLE[(int)cData]);
     }
     if( isdot & LCD_DOT){
         SPI_SetData(0x80);
@@ -59,7 +59,7 @@ void LCD_Transmit(char cData)
     char tData = 0;
     if (cData < sizeof(CHARTABLE)/sizeof(CHARTABLE[0]))
     {
-        tData = pgm_read_byte(&CHARTABLE[cData]);
+        tData = pgm_read_byte(&CHARTABLE[(int)cData]);
     }
     
     SPI_SetData(0x00);

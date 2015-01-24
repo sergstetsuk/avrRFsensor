@@ -115,7 +115,6 @@ ISR(WDT_vect)
     {
         unsigned long tempTick;
         unsigned char sec,min,hour,day;
-        LCD_Clear();
         
         r0 = ReadRFM69HW(RegFifo);//id
         r1 = ReadRFM69HW(RegFifo);
@@ -123,6 +122,11 @@ ISR(WDT_vect)
         *((char*) &tempTick+1) = ReadRFM69HW(RegFifo);
         *((char*) &tempTick+2) = ReadRFM69HW(RegFifo);
         *((char*) &tempTick+3) = ReadRFM69HW(RegFifo);
+
+        while (ReadRFM69HW(RegIrqFlags2)&0x40)
+        {
+            r0 = ReadRFM69HW(RegFifo);
+        }
 
         sec = tempTick%60;
         tempTick /= 60;
@@ -132,10 +136,7 @@ ISR(WDT_vect)
         tempTick /= 24;
         day = tempTick%99;
         
-        //~ LCD_Transmit(tempTick&0x0F);
-        //~ LCD_Transmit(tempTick>>4&0x0F);
-        //~ LCD_Transmit(tempTick>>8&0x0F);
-        //~ LCD_Transmit(tempTick>>12&0x0F);
+        LCD_Clear();
         LCD_Transmit(sec%10);
         LCD_Transmit(sec/10);
         LCD_TransmitDot(min%10, LCD_DOT);
@@ -144,14 +145,8 @@ ISR(WDT_vect)
         LCD_Transmit(hour/10);
         LCD_TransmitDot(day%10, LCD_DOT|LCD_HASH);
         LCD_TransmitDot(day/10, LCD_HASH);
-        //LCD_Transmit(255);
-        //~ LCD_TransmitDot((r0 & 0x0F), LCD_DOT|LCD_HASH);
-        //~ LCD_TransmitDot((r0 & 0xF0)>>4, LCD_HASH);
-        
-        while (ReadRFM69HW(RegIrqFlags2)&0x40)
-        {
-            r0 = ReadRFM69HW(RegFifo);
-        }
+        //~ LCD_TransmitDot(0x0F, LCD_DOT|LCD_HASH);
+        //~ LCD_TransmitDot(0x0F, LCD_HASH);
         return;
     }
             //~ LCD_Transmit((c & 0x0F));
