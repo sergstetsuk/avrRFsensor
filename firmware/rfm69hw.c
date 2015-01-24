@@ -40,7 +40,7 @@ void InitRFM69HWCommon()
         /*0x19*/{RegRxBw,0x42}, //default
         /*0x29*/{RegRssiThresh,228}, //default gain is 0xe4=228 (-Seisitivity/2) = -114dB
         /*0x2c*/{RegPreambleMsb,0x00}, //Preamble size msb = 0 default
-        /*0x2d*/{RegPreambleLsb,0x03}, //Preamble size lsb = 3 default
+        /*0x2d*/{RegPreambleLsb,0x08}, //Preamble size lsb = 8 default
         /*0x2e*/{RegSyncConfig,SYNCCONGIG_SYNC_ON|SYNCCONFIG_SYNC_SIZE_2},
         /*0x2f*/{RegSyncValue1, 0x2D }, //attempt to make this compatible with sync1 byte of RFM12B lib
         /*0x30*/{RegSyncValue2, 0xE8 }, //
@@ -69,7 +69,12 @@ void InitRFM69HWrx()
     WriteRFM69HW(RegAutoModes,AUTOMODES_ENTER_CRCOK
                              |AUTOMODES_EXIT_FIFOEMPTY
                              |AUTOMODES_INTERMEDIATE_SLEEP); //enter crcok,exit fifoempty, interstate sleep
-    WriteRFM69HW(RegOpMode,OPMODE_RX);
+    //WriteRFM69HW(RegOpMode,OPMODE_RX);
+    /*0x0D*/WriteRFM69HW(RegListen1,LISTEN1_RESOL_IDLE_262000|LISTEN1_RESOL_RX_262000|LISTEN1_CRITERIA_RSSI|LISTEN1_END_10);  //
+    /*0x0E*/WriteRFM69HW(RegListen2,/*LISTEN2_COEFIDLE*/0x10);  //
+    /*0x0F*/WriteRFM69HW(RegListen3,/*LISTEN2_COEFRX*/0x10);  //
+    WriteRFM69HW(RegOpMode,OPMODE_LISTEN_ON|OPMODE_STNDBY|OPMODE_SEQUENCER_ON);
+    
 }
 
 void InitRFM69HWtx()
