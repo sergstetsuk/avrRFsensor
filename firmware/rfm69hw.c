@@ -45,14 +45,14 @@ void InitRFM69HWCommon()
         /*0x2f*/{RegSyncValue1, 0x2D }, //attempt to make this compatible with sync1 byte of RFM12B lib
         /*0x30*/{RegSyncValue2, 0xE8 }, //
         /*0x37*/{RegPacketConfig1,PACKET1_FORMAT_FIXED|PACKET1_DCFREE_OFF|PACKET1_CRC_ON|PACKET1_ADDRFILTER_OFF}, //default
-        /*0x38*/{RegPayloadLength,0x08},
-        /*0x3C*/{RegFifoThresh,FIFOTHRESH_TXSTART_FIFONOTEMPTY|0x07/*FIFO LEVEL VALUE*/}, //Fifo level+1 = packet size
+        /*0x38*/{RegPayloadLength,0x10},
+        /*0x3C*/{RegFifoThresh,FIFOTHRESH_TXSTART_FIFONOTEMPTY|0x0F/*FIFO LEVEL VALUE*/}, //Fifo level+1 = packet size
         /*0x3d*/{RegPacketConfig2, PACKET2_AUTORXRESTART_OFF|PACKET2_AES_OFF}, //RXRESTARTDELAY must match transmitter PA ramp-down time (bitrate dependent)
         /*0x6f*/{RegTestDagc, TESTDAGC_IMPROVED_LOWBETA0}, // run DAGC continuously in RX mode, recommended default for AfcLowBetaOn=0
-            /*0x11*/{RegPaLevel,PALEVEL_PA0_OFF|PALEVEL_PA1_ON|PALEVEL_PA2_ON|PALEVEL_OUTPUTPOWER_11111},  //20dB
-            /*0x13*/{RegOcp,OCP_OFF},  //20dB
-            /*0x5a*/{RegTestPa1,TESTPA1_20dBm},  //20dB
-            /*0x5c*/{RegTestPa2,TESTPA2_20dBm},  //20dB
+            //~ /*0x11*/{RegPaLevel,PALEVEL_PA0_OFF|PALEVEL_PA1_ON|PALEVEL_PA2_ON|PALEVEL_OUTPUTPOWER_11111},  //20dB
+            //~ /*0x13*/{RegOcp,OCP_OFF},  //20dB
+            //~ /*0x5a*/{RegTestPa1,TESTPA1_20dBm},  //20dB
+            //~ /*0x5c*/{RegTestPa2,TESTPA2_20dBm},  //20dB
         /*end   */ {255,0}
     };
 

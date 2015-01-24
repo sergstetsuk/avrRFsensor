@@ -80,7 +80,7 @@ ISR(WDT_vect)
     DDRB |= (1<<DDB4);  //init CS pins for devices
     PORTB = (1<<PORTB4); //CS FOR RFM69HW 1 = not selected
 
-#if 0
+#if 1
     if (TickCounter == 0x01)
     {
         InitRFM69HWtx();
@@ -93,6 +93,14 @@ ISR(WDT_vect)
         WriteRFM69HW(RegFifo,(TickCounter & 0xFF00) >> 8);
         WriteRFM69HW(RegFifo,(TickCounter & 0xFF0000) >> 16);
         WriteRFM69HW(RegFifo,(TickCounter & 0xFF000000) >> 24);
+        WriteRFM69HW(RegFifo,0x00);
+        WriteRFM69HW(RegFifo,0x00);
+        WriteRFM69HW(RegFifo,0x00);
+        WriteRFM69HW(RegFifo,0x00);
+        WriteRFM69HW(RegFifo,0x00);
+        WriteRFM69HW(RegFifo,0x00);
+        WriteRFM69HW(RegFifo,0x00);
+        WriteRFM69HW(RegFifo,0x00);
         WriteRFM69HW(RegFifo,0x00);
         WriteRFM69HW(RegFifo,0x70);
     }
