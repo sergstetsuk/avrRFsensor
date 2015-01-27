@@ -7,12 +7,14 @@
 # License: GNU GPL v2 (see License.txt), GNU GPL v3 or proprietary (CommercialLicense.txt)
 # This Revision: $Id: Makefile 1 2012.05.28 20:14 cs $
 
-DEVICE  = attiny85
-F_CPU   = 8000000
-#DEVICE  = atmega168
-#F_CPU   = 18000000
-FUSE_L  = 0xE2
-FUSE_H  = 0xDE
+#DEVICE  = attiny85
+#F_CPU   = 8000000
+DEVICE  = atmega168p
+F_CPU   = 18000000
+#~ FUSE_L  = 0xE2
+#~ FUSE_H  = 0xDE
+FUSE_L  = 0xF7
+FUSE_H  = 0xDF
 LOCK = 0x03
 AVRDUDE = avrdude -c usbasp -p $(DEVICE) # edit this line for your programmer
 

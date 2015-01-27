@@ -37,7 +37,7 @@ $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
 Title ""
-Date "23 jan 2015"
+Date "26 jan 2015"
 Rev ""
 Comp ""
 Comment1 ""
@@ -465,7 +465,7 @@ L R R5
 U 1 1 54B7D03F
 P 1400 6000
 F 0 "R5" V 1400 5900 50  0000 C CNN
-F 1 "24" V 1400 6050 50  0000 C CNN
+F 1 "120" V 1400 6050 50  0000 C CNN
 F 2 "" H 1400 6000 60  0001 C CNN
 F 3 "" H 1400 6000 60  0001 C CNN
 	1    1400 6000
