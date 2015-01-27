@@ -7,7 +7,7 @@
 # License: GNU GPL v2 (see License.txt), GNU GPL v3 or proprietary (CommercialLicense.txt)
 # This Revision: $Id: Makefile 1 2012.05.28 20:14 cs $
 
-#DEVICE  = attiny85
+#~ DEVICE  = attiny85
 #F_CPU   = 8000000
 DEVICE  = atmega168p
 F_CPU   = 18000000
@@ -18,7 +18,7 @@ FUSE_H  = 0xDF
 LOCK = 0x03
 AVRDUDE = avrdude -c usbasp -p $(DEVICE) # edit this line for your programmer
 
-CFLAGS  = -I. -Iusbdrv -DDEBUG_LEVEL=0
+CFLAGS  = -Iusbdrv -I. -DDEBUG_LEVEL=0
 
 CC = avr-gcc -Wall -Os -DF_CPU=$(F_CPU) $(CFLAGS) -mmcu=$(DEVICE)
 
@@ -26,7 +26,7 @@ CC = avr-gcc -Wall -Os -DF_CPU=$(F_CPU) $(CFLAGS) -mmcu=$(DEVICE)
 EXEC = rfsensor.elf
 HEX = $(EXEC:.elf=.hex)
 SOURCES = $(wildcard *.c)
-OBJECTS = $(SOURCES:.c=.o)
+OBJECTS = $(SOURCES:.c=.o) usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o
 
 ##############################################################################
 # Fuse values for particular devices
@@ -157,7 +157,7 @@ read:
 
 # rule for deleting dependent files (those which can be built by Make):
 clean:
-	rm -f *.elf *.hex *.o *.lst *.map
+	rm -f *.elf *.hex *.o *.lst *.map ./usbdrv/*.o
 
 rebuild: clean hex
 
