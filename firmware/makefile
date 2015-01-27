@@ -157,7 +157,7 @@ read:
 
 # rule for deleting dependent files (those which can be built by Make):
 clean:
-	rm -f *.elf *.hex *.o *.lst *.map ./usbdrv/*.o
+	rm -f *.elf *.hex *.o *.lst *.map $(OBJECTS)
 
 rebuild: clean hex
 

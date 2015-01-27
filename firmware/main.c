@@ -25,7 +25,6 @@
 
 #include <avr/pgmspace.h>   /* required by usbdrv.h */
 #include "usbdrv.h"
-#include "oddebug.h"        /* This is also an example for using debug macros */
 
 #include "spi.h"
 #include "lcd.h"
@@ -126,8 +125,6 @@ int main(void)
      * That's the way we need D+ and D-. Therefore we don't need any
      * additional hardware initialization.
      */
-    odDebugInit();
-    DBG1(0x00, 0, 0);       /* debug output: main starts */
     usbInit();
     usbDeviceDisconnect();  /* enforce re-enumeration, do this while interrupts are disabled! */
     i = 0;
@@ -137,9 +134,7 @@ int main(void)
     }
     usbDeviceConnect();
     sei();
-    DBG1(0x01, 0, 0);       /* debug output: main loop starts */
     for(;;){                /* main event loop */
-        DBG1(0x02, 0, 0);   /* debug output: main loop iterates */
         wdt_reset();
         usbPoll();
     }
@@ -186,7 +181,7 @@ ISR(WDT_vect)
     DDRB |= (1<<DDB4);  //init CS pins for devices
     PORTB = (1<<PORTB4); //CS FOR RFM69HW 1 = not selected
 
-#if 1
+#if 0
     if (TickCounter == 0x01)
     {
         InitRFM69HWtx();

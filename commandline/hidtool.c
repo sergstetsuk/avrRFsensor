@@ -105,14 +105,14 @@ int         err;
     }
     if((dev = openDevice()) == NULL)
         exit(1);
-    if(strcasecmp(argv[1], "read") == 0){
+    if(strcasecmp(argv[1], "-read") == 0){
         int len = sizeof(buffer);
         if((err = usbhidGetReport(dev, 0, buffer, &len)) != 0){
             fprintf(stderr, "error reading data: %s\n", usbErrorMessage(err));
         }else{
             hexdump(buffer + 1, sizeof(buffer) - 1);
         }
-    }else if(strcasecmp(argv[1], "write") == 0){
+    }else if(strcasecmp(argv[1], "-write") == 0){
         int i, pos;
         memset(buffer, 0, sizeof(buffer));
         for(pos = 1, i = 2; i < argc && pos < sizeof(buffer); i++){
