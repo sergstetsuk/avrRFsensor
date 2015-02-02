@@ -45,6 +45,7 @@ PROGMEM const char usbHidReportDescriptor[22] = {    /* USB report descriptor */
 /* The following variables store the status of the current data transfer */
 static uchar    currentAddress;
 static uchar    bytesRemaining;
+static uchar    tempData;
 
 /* ------------------------------------------------------------------------- */
 
@@ -55,7 +56,17 @@ uchar   usbFunctionRead(uchar *data, uchar len)
 {
     if(len > bytesRemaining)
         len = bytesRemaining;
-    eeprom_read_block(data, (uchar *)0 + currentAddress, len);
+    //~ //!eeprom_read_block(data, (uchar *)0 + currentAddress, len);
+    //~ //!currentAddress += len;
+    //~ //!bytesRemaining -= len;
+    
+    SPI_Init(); //init spi interface
+    InitRFM69HW();
+    uchar i=0;
+    while(i < len) {
+        *(data+i) = ReadRFM69HW(currentAddress+i);
+        i++;
+    } 
     currentAddress += len;
     bytesRemaining -= len;
     return len;
@@ -125,9 +136,30 @@ int main(void)
      * That's the way we need D+ and D-. Therefore we don't need any
      * additional hardware initialization.
      */
+    SPI_Init(); //init spi interface
+    InitRFM69HW();
+    PORTD |= (1<<PORTD3) | (1<<PORTD4);
+    DDRD |= (1<<DD3) | (1<<DD4);
+    tempData = ReadRFM69HW(RegVersion);
+    PORTD &= ~(1<<PORTD3);
     usbInit();
     usbDeviceDisconnect();  /* enforce re-enumeration, do this while interrupts are disabled! */
     i = 0;
+    PORTD &= ~(1<<PORTD4);
+
+//~ #define SPI_PORT PORTB
+//~ #define SPI_DDR DDRB
+//~ #define SPI_MOSI PORTB3
+//~ #define SPI_MISO PORTB4
+//~ #define SPI_SCK PORTB5
+    //~ SPI_DDR |= ((1<<SPI_MOSI)|(1<<SPI_SCK));
+    //~ SPI_DDR &= ~((1<<SPI_MISO));
+    //~ SPI_PORT &= ~((1<<SPI_MOSI)|(1<<SPI_MISO)|(1<<SPI_SCK));
+    //~ SPI_PORT |= (1<<SPI_MOSI);
+    //~ for(;;){
+        //~ wdt_reset();
+        //~ };
+
     while(--i){             /* fake USB disconnect for > 250 ms */
         wdt_reset();
         _delay_ms(1);
@@ -144,9 +176,8 @@ int main(void)
     //TickCounter = 0; //not needed as in AVR all is 0, especially global and static vars
     /*debug code to indicate restart*/
     SPI_Init(); //init spi interface
+    InitRFM69HW();
     LCD_Init(); //init lcd device
-    PORTB = (1<<PORTB4); //CS FOR RFM69HW 1 = not selected
-    DDRB |= (1<<DDB4);  //init CS pins for devices
         LCD_Clear();
         LCD_Transmit((0x0F));
     /*end of debug code to indicate restart*/

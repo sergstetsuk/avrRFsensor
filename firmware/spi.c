@@ -2,6 +2,17 @@
 #include "spi.h"
 
 //#define IS_TINY
+#define SPI_PORT_NAME B
+#define SPI_MOSI_BIT 3
+#define SPI_MISO_BIT 4
+#define SPI_SCK_BIT 5
+
+#define SPI_PORT PORTB
+#define SPI_DDR DDRB
+#define SPI_MOSI PORTB3
+#define SPI_MISO PORTB4
+#define SPI_SCK PORTB5
+
 
 void inline SPI_SetData(char cData)
 {
@@ -28,9 +39,11 @@ void inline SPI_Init()
     DDRB |= (1<<DDB2)|(1<<DDB1);    //tiny Configure SCK & DO pins as outputs
     USICR = USICR_DEF;  //tiny
 #else
-    PORTB |= (1<<DDB3)|(1<<DDB4)|(1<<DDB5);
-    DDRB &= ~(1<<DDB4);             //mega Configure DI pin as input
-    DDRB |= (1<<DDB3)|(1<<DDB5);    //mega Configure SCK & DO pins as outputs
+    SPI_PORT |= (1<<SPI_MISO);
+    SPI_PORT &= ~((1<<SPI_MOSI)|(1<<SPI_SCK));
+    SPI_DDR |= (1<<SPI_MOSI)|(1<<SPI_SCK);    //mega Configure SCK & DO pins as outputs
+    SPI_DDR &= ~(1<<SPI_MISO);             //mega Configure DI pin as input
+    //~ SPCR = (1<<SPE)|(1<<MSTR)|(1<<SPR1)|(1<<SPR0);
 #endif
 }
 
@@ -45,8 +58,29 @@ char SPI_Transmit (char cData)
     }
     return USIDR;
 #else
-    SPI_SetData(cData);
-    while(!(SPSR & (1<<SPIF))); //mega
-    return SPDR; //mega
+    //~ SPI_SetData(cData);
+    //~ while(!(SPSR & (1<<SPIF))); //mega
+    //~ return SPDR; //mega
+    unsigned char workingBit,rData;
+    for(workingBit=0x80;workingBit !=0; workingBit>>=1)
+    {
+        if(cData & workingBit){
+            SPI_PORT |= (1<<SPI_MOSI); //set mosi
+        }
+        else {
+            SPI_PORT &= ~(1<<SPI_MOSI);
+        }
+
+        SPI_PORT |= (1<<SPI_SCK); //clock front
+
+        if(SPI_PORT & (1<<SPI_MISO)){
+            rData |= workingBit; //read miso
+        }
+        else {
+            rData &= ~workingBit;
+        }
+            SPI_PORT &= ~(1<<SPI_SCK); //clock last front
+    }
+        return rData;
 #endif
 }

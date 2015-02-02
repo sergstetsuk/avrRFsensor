@@ -2,23 +2,39 @@
 #include "rfm69hw.h"
 #include "spi.h"
 
+#ifdef __AVR_ATtiny85__
+#define RFM_PORT PORTB
+#define RFM_DDR DDRB
+#define RFM_CS PORTB4
+#else
+#define RFM_PORT PORTB
+#define RFM_DDR DDRB
+#define RFM_CS PORTB2
+#endif
+
+void InitRFM69HW(void)
+{
+    RFM_PORT = (1<<RFM_CS); //CS FOR RFM69HW 1 = not selected
+    RFM_DDR |= (1<<RFM_CS);  //init CS pins for devices
+}
+
 unsigned char ReadRFM69HW(unsigned char reg)
 {
     unsigned char ret;
-    PORTB &= ~(1<<PORTB4);  //todo: make constants RFM_PORT & RFM_CS
+    RFM_PORT &= ~(1<<RFM_CS);  //todo: make constants RFM_PORT & RFM_CS
 	SPI_Transmit(reg & 0x7F);   //todo: 0x7f is reg mask
 	ret = SPI_Transmit(0);
-    PORTB |= (1<<PORTB4);
+    RFM_PORT |= (1<<RFM_CS);
     return ret;
 }
 
 unsigned char WriteRFM69HW(unsigned char reg, unsigned char val)
 {
     unsigned char ret;
-    PORTB &= ~(1<<PORTB4);  //todo: make constants RFM_PORT & RFM_CS
+    RFM_PORT &= ~(1<<RFM_CS);  //todo: make constants RFM_PORT & RFM_CS
 	SPI_Transmit(reg | 0x80); //todo: 0x80 is write bit
 	ret = SPI_Transmit(val);
-    PORTB |= (1<<PORTB4);
+    RFM_PORT |= (1<<RFM_CS);
     return ret;
 }
 
