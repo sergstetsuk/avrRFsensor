@@ -3,6 +3,15 @@
 
 #include "spi.h"
 #include "lcd.h"
+#ifdef __AVR_ATtiny85__
+    #define LCD_PORT PORTC
+    #define LCD_DDR DDRC
+    #define LCD_LOAD PORTC4
+#else
+    #define LCD_PORT PORTC
+    #define LCD_DDR DDRC
+    #define LCD_LOAD PORTC4
+#endif
 
 const unsigned char CHARTABLE[] PROGMEM = {
       0b01111011, //0
@@ -25,14 +34,14 @@ const unsigned char CHARTABLE[] PROGMEM = {
 
 void inline LCD_Init()
 {
-    DDRB |= LCD_LOAD;   //Configure LOAD pin as output
-    //PORTB &= ~LCD_LOAD;
+    LCD_PORT &= ~(1<<LCD_LOAD);
+    LCD_DDR |= (1<<LCD_LOAD);   //Configure LOAD pin as output
 }
 
 void inline LCD_Load()
 {
-    PORTB ^= LCD_LOAD;  //Load data strobe
-    PORTB ^= LCD_LOAD;
+    LCD_PORT ^= (1<<LCD_LOAD);  //Load data strobe
+    LCD_PORT ^= (1<<LCD_LOAD);
 }
 void LCD_TransmitDot(char cData, char isdot)
 {

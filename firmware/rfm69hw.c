@@ -3,18 +3,18 @@
 #include "spi.h"
 
 #ifdef __AVR_ATtiny85__
-#define RFM_PORT PORTB
-#define RFM_DDR DDRB
-#define RFM_CS PORTB4
+    #define RFM_PORT PORTB
+    #define RFM_DDR DDRB
+    #define RFM_CS PORTB4
 #else
-#define RFM_PORT PORTB
-#define RFM_DDR DDRB
-#define RFM_CS PORTB2
+    #define RFM_PORT PORTB
+    #define RFM_DDR DDRB
+    #define RFM_CS PORTB2
 #endif
 
 void InitRFM69HW(void)
 {
-    RFM_PORT = (1<<RFM_CS); //CS FOR RFM69HW 1 = not selected
+    RFM_PORT |= (1<<RFM_CS); //CS FOR RFM69HW 1 = not selected
     RFM_DDR |= (1<<RFM_CS);  //init CS pins for devices
 }
 

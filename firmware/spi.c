@@ -2,85 +2,62 @@
 #include "spi.h"
 
 //#define IS_TINY
-#define SPI_PORT_NAME B
-#define SPI_MOSI_BIT 3
-#define SPI_MISO_BIT 4
-#define SPI_SCK_BIT 5
-
-#define SPI_PORT PORTB
-#define SPI_DDR DDRB
-#define SPI_MOSI PORTB3
-#define SPI_MISO PORTB4
-#define SPI_SCK PORTB5
-
+#ifdef __AVR_ATtiny85__
+    #define SPI_PORT PORTB 
+    #define SPI_PIN PINB 
+    #define SPI_DDR DDRB
+    #define SPI_DI PORTB0
+    #define SPI_DO PORTB1
+    #define SPI_SCK PORTB2
+#else
+    #define SPI_PORT PORTB 
+    #define SPI_PIN PINB 
+    #define SPI_DDR DDRB
+    #define SPI_DI PORTB4
+    #define SPI_DO PORTB3
+    #define SPI_SCK PORTB5
+#endif
 
 void inline SPI_SetData(char cData)
 {
-#ifdef __AVR_ATtiny85__
-    USIDR = cData; //tiny
-#else
-    SPDR = cData; //mega
-#endif
+    if(cData & 0x80) { //set output pin
+        SPI_PORT |= (1<<SPI_DO);
+    } else {
+        SPI_PORT &= ~(1<<SPI_DO);
+    }
 }
 
 void inline SPI_OneClock()
 {
-#ifdef __AVR_ATtiny85__
-    USICR = USICR_DEF|(0<<USICLK);
-    USICR = USICR_DEF|(1<<USICLK); //one clock
-#endif
+    SPI_PORT |= (1<<SPI_SCK); //sck front
+    SPI_PORT &= ~(1<<SPI_SCK); //sck front
 }
 
 void inline SPI_Init()
 {
-#ifdef __AVR_ATtiny85__
-    PORTB |= (1<<PORTB0)|(1<<PORTB1)|(1<<PORTB2);
-    DDRB &= ~(1<<DDB0);             //tiny Configure DI pin as input
-    DDRB |= (1<<DDB2)|(1<<DDB1);    //tiny Configure SCK & DO pins as outputs
-    USICR = USICR_DEF;  //tiny
-#else
-    SPI_PORT |= (1<<SPI_MISO);
-    SPI_PORT &= ~((1<<SPI_MOSI)|(1<<SPI_SCK));
-    SPI_DDR |= (1<<SPI_MOSI)|(1<<SPI_SCK);    //mega Configure SCK & DO pins as outputs
-    SPI_DDR &= ~(1<<SPI_MISO);             //mega Configure DI pin as input
-    //~ SPCR = (1<<SPE)|(1<<MSTR)|(1<<SPR1)|(1<<SPR0);
-#endif
+    SPI_PORT &= ~((1<<SPI_SCK)|(1<<SPI_DI));
+    SPI_PORT |= (1<<SPI_DO);
+    SPI_DDR &= ~(1<<SPI_DI);                //Configure DI pin as input
+    SPI_DDR |= (1<<SPI_DO)|(1<<SPI_SCK);    //Configure SCK & DO pins as outputs
 }
 
 char SPI_Transmit (char cData)
 {
-#ifdef __AVR_ATtiny85__
-    char i;
-    SPI_SetData(cData);
-    for(i=0;i<8;i++)
+    unsigned char rData=0,i;
+    for(i=0x80;i!=0;i>>=1)
     {
-        SPI_OneClock();
+        if(cData & i) { //set output pin
+            SPI_PORT |= (1<<SPI_DO);
+        } else {
+            SPI_PORT &= ~(1<<SPI_DO);
+        }
+        SPI_PORT |= (1<<SPI_SCK); //sck front
+        if(SPI_PIN & (1<<SPI_DI)) { //read input pin
+            rData |= i;
+        } else {
+            rData &= ~i;
+        }
+        SPI_PORT &= ~(1<<SPI_SCK); //sck front
     }
-    return USIDR;
-#else
-    //~ SPI_SetData(cData);
-    //~ while(!(SPSR & (1<<SPIF))); //mega
-    //~ return SPDR; //mega
-    unsigned char workingBit,rData;
-    for(workingBit=0x80;workingBit !=0; workingBit>>=1)
-    {
-        if(cData & workingBit){
-            SPI_PORT |= (1<<SPI_MOSI); //set mosi
-        }
-        else {
-            SPI_PORT &= ~(1<<SPI_MOSI);
-        }
-
-        SPI_PORT |= (1<<SPI_SCK); //clock front
-
-        if(SPI_PORT & (1<<SPI_MISO)){
-            rData |= workingBit; //read miso
-        }
-        else {
-            rData &= ~workingBit;
-        }
-            SPI_PORT &= ~(1<<SPI_SCK); //clock last front
-    }
-        return rData;
-#endif
+    return rData;
 }

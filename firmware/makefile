@@ -26,7 +26,8 @@ CC = avr-gcc -Wall -Os -DF_CPU=$(F_CPU) $(CFLAGS) -mmcu=$(DEVICE)
 EXEC = rfsensor.elf
 HEX = $(EXEC:.elf=.hex)
 SOURCES = $(wildcard *.c)
-OBJECTS = $(SOURCES:.c=.o) usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o
+OBJECTS = $(SOURCES:.c=.o) 
+#usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o
 
 ##############################################################################
 # Fuse values for particular devices
