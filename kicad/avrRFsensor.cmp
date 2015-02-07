@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by CvPcb (22-Jun-2014 BZR 4027)-stable date = сб, 17-січ-2015 16:24:56 +0200
+Cmp-Mod V01 Created by CvPcb (22-Jun-2014 BZR 4027)-stable date = сб, 07-лют-2015 09:57:09 +0200
 
 BeginCmp
 TimeStamp = /4F549CD9;
@@ -36,113 +36,57 @@ IdModule  = SOD80;
 EndCmp
 
 BeginCmp
-TimeStamp = /54B7D045;
+TimeStamp = /54D5C585;
 Reference = D3;
-ValeurCmp = 3V6;
+ValeurCmp = DIODE;
 IdModule  = SOD80;
 EndCmp
 
 BeginCmp
-TimeStamp = /54BA6FB6;
+TimeStamp = /54D5C594;
+Reference = D4;
+ValeurCmp = DIODE;
+IdModule  = SOD80;
+EndCmp
+
+BeginCmp
+TimeStamp = /54BA8548;
 Reference = P1;
 ValeurCmp = CONN_1;
 IdModule  = 1PIN_SMD_1mm;
 EndCmp
 
 BeginCmp
-TimeStamp = /54BA6FB0;
+TimeStamp = /54BA8557;
 Reference = P2;
 ValeurCmp = CONN_1;
 IdModule  = 1PIN_SMD_1mm;
 EndCmp
 
 BeginCmp
-TimeStamp = /54BA6FAA;
+TimeStamp = /54BA86B7;
 Reference = P3;
 ValeurCmp = CONN_1;
 IdModule  = 1PIN_SMD_1mm;
 EndCmp
 
 BeginCmp
-TimeStamp = /54BA709A;
+TimeStamp = /54BA86BD;
 Reference = P4;
 ValeurCmp = CONN_1;
 IdModule  = 1PIN_SMD_1mm;
 EndCmp
 
 BeginCmp
-TimeStamp = /54BA70A0;
+TimeStamp = /54BA884D;
 Reference = P5;
 ValeurCmp = CONN_1;
 IdModule  = 1PIN_SMD_1mm;
 EndCmp
 
 BeginCmp
-TimeStamp = /54BA6E53;
+TimeStamp = /54BA88D5;
 Reference = P6;
-ValeurCmp = CONN_1;
-IdModule  = 1PIN_SMD_1mm;
-EndCmp
-
-BeginCmp
-TimeStamp = /54BA6E60;
-Reference = P7;
-ValeurCmp = CONN_1;
-IdModule  = 1PIN_SMD_1mm;
-EndCmp
-
-BeginCmp
-TimeStamp = /54BA6E66;
-Reference = P8;
-ValeurCmp = CONN_1;
-IdModule  = 1PIN_SMD_1mm;
-EndCmp
-
-BeginCmp
-TimeStamp = /54BA6E6C;
-Reference = P9;
-ValeurCmp = CONN_1;
-IdModule  = 1PIN_SMD_1mm;
-EndCmp
-
-BeginCmp
-TimeStamp = /54BA7145;
-Reference = P10;
-ValeurCmp = CONN_1;
-IdModule  = 1PIN_SMD_1mm;
-EndCmp
-
-BeginCmp
-TimeStamp = /54BA6F8C;
-Reference = P11;
-ValeurCmp = CONN_1;
-IdModule  = 1PIN_SMD_1mm;
-EndCmp
-
-BeginCmp
-TimeStamp = /54BA6F92;
-Reference = P12;
-ValeurCmp = CONN_1;
-IdModule  = 1PIN_SMD_1mm;
-EndCmp
-
-BeginCmp
-TimeStamp = /54BA6F98;
-Reference = P13;
-ValeurCmp = CONN_1;
-IdModule  = 1PIN_SMD_1mm;
-EndCmp
-
-BeginCmp
-TimeStamp = /54BA6F9E;
-Reference = P14;
-ValeurCmp = CONN_1;
-IdModule  = 1PIN_SMD_1mm;
-EndCmp
-
-BeginCmp
-TimeStamp = /54BA6FA4;
-Reference = P15;
 ValeurCmp = CONN_1;
 IdModule  = 1PIN_SMD_1mm;
 EndCmp
@@ -183,37 +127,30 @@ IdModule  = SM0805;
 EndCmp
 
 BeginCmp
-TimeStamp = /54B7D03F;
-Reference = R5;
-ValeurCmp = 25;
-IdModule  = SM0805;
-EndCmp
-
-BeginCmp
 TimeStamp = /54BA358D;
 Reference = R6;
-ValeurCmp = 10k;
+ValeurCmp = 1k;
 IdModule  = SM0805;
 EndCmp
 
 BeginCmp
 TimeStamp = /54B7CD7C;
 Reference = R7;
-ValeurCmp = 10k;
+ValeurCmp = 1k;
 IdModule  = SM0805;
 EndCmp
 
 BeginCmp
 TimeStamp = /54B7CDBD;
 Reference = R8;
-ValeurCmp = 10k;
+ValeurCmp = 1k;
 IdModule  = SM0805;
 EndCmp
 
 BeginCmp
 TimeStamp = /54B7CDC3;
 Reference = R9;
-ValeurCmp = 10k;
+ValeurCmp = 1k;
 IdModule  = SM0805;
 EndCmp
 

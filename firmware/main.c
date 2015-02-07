@@ -23,10 +23,91 @@
 #include <avr/eeprom.h>
 #include <avr/sleep.h>
 
+#include <avr/pgmspace.h>   /* required by usbdrv.h */
+#include "usbdrv.h"
+#include "oddebug.h"        /* This is also an example for using debug macros */
+
 #include "spi.h"
 #include "lcd.h"
 #include "rfm69hw.h"
+
+PROGMEM const char usbHidReportDescriptor[22] = {    /* USB report descriptor */
+    0x06, 0x00, 0xff,              // USAGE_PAGE (Generic Desktop)
+    0x09, 0x01,                    // USAGE (Vendor Usage 1)
+    0xa1, 0x01,                    // COLLECTION (Application)
+    0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
+    0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
+    0x75, 0x08,                    //   REPORT_SIZE (8)
+    0x95, 0x80,                    //   REPORT_COUNT (128)
+    0x09, 0x00,                    //   USAGE (Undefined)
+    0xb2, 0x02, 0x01,              //   FEATURE (Data,Var,Abs,Buf)
+    0xc0                           // END_COLLECTION
+};
+/* The following variables store the status of the current data transfer */
+static uchar    currentAddress;
+static uchar    bytesRemaining;
 static volatile unsigned long TickCounter;
+
+/* ------------------------------------------------------------------------- */
+
+/* usbFunctionRead() is called when the host requests a chunk of data from
+ * the device. For more information see the documentation in usbdrv/usbdrv.h.
+ */
+uchar   usbFunctionRead(uchar *data, uchar len)
+{
+    uchar i;
+    if(len > bytesRemaining)
+        len = bytesRemaining;
+    //~ eeprom_read_block(data, (uchar *)0 + currentAddress, len);
+    for (i=0;i<len;i++) {
+        data[i] = ReadRFM69HW((currentAddress+i) & 0x7F);
+    }
+    data[0] = TickCounter&0x7F;
+    currentAddress += len;
+    bytesRemaining -= len;
+    return len;
+}
+
+/* usbFunctionWrite() is called when the host sends a chunk of data to the
+ * device. For more information see the documentation in usbdrv/usbdrv.h.
+ */
+uchar   usbFunctionWrite(uchar *data, uchar len)
+{
+    if(bytesRemaining == 0)
+        return 1;               /* end of transfer */
+    if(len > bytesRemaining)
+        len = bytesRemaining;
+    eeprom_write_block(data, (uchar *)0 + currentAddress, len);
+    currentAddress += len;
+    bytesRemaining -= len;
+    return bytesRemaining == 0; /* return 1 if this was the last chunk */
+}
+
+/* ------------------------------------------------------------------------- */
+
+usbMsgLen_t usbFunctionSetup(uchar data[8])
+{
+usbRequest_t    *rq = (void *)data;
+
+    if((rq->bmRequestType & USBRQ_TYPE_MASK) == USBRQ_TYPE_CLASS){    /* HID class request */
+        if(rq->bRequest == USBRQ_HID_GET_REPORT){  /* wValue: ReportType (highbyte), ReportID (lowbyte) */
+            /* since we have only one report type, we can ignore the report-ID */
+            bytesRemaining = 128;
+            currentAddress = 0;
+            return USB_NO_MSG;  /* use usbFunctionRead() to obtain data */
+        }else if(rq->bRequest == USBRQ_HID_SET_REPORT){
+            /* since we have only one report type, we can ignore the report-ID */
+            bytesRemaining = 128;
+            currentAddress = 0;
+            return USB_NO_MSG;  /* use usbFunctionWrite() to receive data from host */
+        }
+    }else{
+        /* ignore vendor type requests, we don't use any */
+    }
+    return 0;
+}
+
+/* ------------------------------------------------------------------------- */
 
 typedef struct {
     unsigned int ID;
@@ -39,6 +120,52 @@ RunTimeConfigStruc RunTimeConfig __attribute__ ((section(".eeprom")));
 
 int main(void)
 {
+    uchar   i;
+    wdt_enable(WDTO_1S);
+    /* Even if you don't use the watchdog, turn it off here. On newer devices,
+     * the status of the watchdog (on/off, period) is PRESERVED OVER RESET!
+     */
+    /* RESET status: all port bits are inputs without pull-up.
+     * That's the way we need D+ and D-. Therefore we don't need any
+     * additional hardware initialization.
+     */
+    odDebugInit();
+    usbInit();
+    usbDeviceDisconnect();  /* enforce re-enumeration, do this while interrupts are disabled! */
+    i = 0;
+    while(--i){             /* fake USB disconnect for > 250 ms */
+        wdt_reset();
+        _delay_ms(1);
+    }
+    usbDeviceConnect();
+//new prog...-->
+#ifdef WDTCR //re-enable WDT for interrupt+reset
+        WDTCR |= (1<<WDE) | (1<<WDIE);  //enable watchdog + enable interrupt on watchdog
+#else
+        WDTCSR |= (1<<WDE) | (1<<WDIE);  //enable watchdog + enable interrupt on watchdog
+#endif
+    //TickCounter = 0; //not needed as in AVR all is 0, especially global and static vars
+    /*debug code to indicate restart*/
+    SPI_Init(); //init spi interface
+    LCD_Init(); //init lcd device
+    InitRFM69HW(); //for rfm cs
+        //~ LCD_Clear();
+        //~ LCD_Transmit((0x0F));
+//end new prog...<--
+/*end of debug code to indicate restart*/
+    sei();
+    for(;;){                /* main event loop */
+        //wdt_reset();
+        usbPoll();
+#ifdef WDTCR //re-enable WDT for interrupt+reset
+        WDTCR |= (1<<WDE) | (1<<WDIE);  //enable watchdog + enable interrupt on watchdog
+#else
+        WDTCSR |= (1<<WDE) | (1<<WDIE);  //enable watchdog + enable interrupt on watchdog
+#endif
+    }
+    return 0;
+
+//new prog...-->
     wdt_enable(WDTO_1S);
     //TickCounter = 0; //not needed as in AVR all is 0, especially global and static vars
     /*debug code to indicate restart*/
@@ -47,23 +174,21 @@ int main(void)
     InitRFM69HW(); //for rfm cs
         LCD_Clear();
         LCD_Transmit((0x0F));
-    /*end of debug code to indicate restart*/
-
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);
     for(;;)
     {
 
-#ifdef WDTCR //re-enable WDT for interrupt+reset
-        WDTCR |= (1<<WDE) | (1<<WDIE);  //enable watchdog + enable interrupt on watchdog
-#else
-        WDTCSR |= (1<<WDE) | (1<<WDIE);  //enable watchdog + enable interrupt on watchdog
-#endif
         sleep_enable();
         //debug off sleep_bod_disable();
         DDRB = 0; //disable pins as outputs for saving energy
         sei();
         sleep_cpu();
         sleep_disable();
+#ifdef WDTCR //re-enable WDT for interrupt+reset
+        WDTCR |= (1<<WDE) | (1<<WDIE);  //enable watchdog + enable interrupt on watchdog
+#else
+        WDTCSR |= (1<<WDE) | (1<<WDIE);  //enable watchdog + enable interrupt on watchdog
+#endif
     }
     return 0;
 }
