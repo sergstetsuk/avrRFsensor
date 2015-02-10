@@ -164,7 +164,7 @@ section at the end of this file).
  * one parameter which distinguishes between the start of RESET state and its
  * end.
  */
-/* #define USB_SET_ADDRESS_HOOK()              hadAddressAssigned(); */
+#define USB_SET_ADDRESS_HOOK()              hadAddressAssigned();
 /* This macro (if defined) is executed when a USB SET_ADDRESS request was
  * received.
  */

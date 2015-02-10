@@ -47,6 +47,7 @@ PROGMEM const char usbHidReportDescriptor[22] = {    /* USB report descriptor */
 static uchar    currentAddress;
 static uchar    bytesRemaining;
 static volatile unsigned long TickCounter;
+static uchar    WorkingMode;
 
 /* ------------------------------------------------------------------------- */
 
@@ -63,6 +64,8 @@ uchar   usbFunctionRead(uchar *data, uchar len)
         data[i] = ReadRFM69HW((currentAddress+i) & 0x7F);
     }
     data[0] = TickCounter&0x7F;
+    data[1] = TickCounter&0x7F00>>8;
+    data[2] = WorkingMode;
     currentAddress += len;
     bytesRemaining -= len;
     return len;
@@ -107,6 +110,11 @@ usbRequest_t    *rq = (void *)data;
     return 0;
 }
 
+void hadAddressAssigned()
+{
+    WorkingMode = 1; //MODE_USB
+}
+
 /* ------------------------------------------------------------------------- */
 
 typedef struct {
@@ -121,6 +129,7 @@ RunTimeConfigStruc RunTimeConfig __attribute__ ((section(".eeprom")));
 int main(void)
 {
     uchar   i;
+    WorkingMode = 0; //MODE_UNDEF
     wdt_enable(WDTO_1S);
     /* Even if you don't use the watchdog, turn it off here. On newer devices,
      * the status of the watchdog (on/off, period) is PRESERVED OVER RESET!
@@ -146,16 +155,14 @@ int main(void)
 #endif
     //TickCounter = 0; //not needed as in AVR all is 0, especially global and static vars
     /*debug code to indicate restart*/
-    SPI_Init(); //init spi interface
-    LCD_Init(); //init lcd device
-    InitRFM69HW(); //for rfm cs
-        //~ LCD_Clear();
-        //~ LCD_Transmit((0x0F));
+    //~ SPI_Init(); //init spi interface
+    //~ LCD_Init(); //init lcd device
+    //~ InitRFM69HW(); //for rfm cs
 //end new prog...<--
 /*end of debug code to indicate restart*/
     sei();
-    for(;;){                /* main event loop */
-        //wdt_reset();
+    for(;TickCounter<3 || WorkingMode == 1/*MODE_USB*/;){                /* main event loop */
+        //!wdt_reset();
         usbPoll();
 #ifdef WDTCR //re-enable WDT for interrupt+reset
         WDTCR |= (1<<WDE) | (1<<WDIE);  //enable watchdog + enable interrupt on watchdog
@@ -163,24 +170,26 @@ int main(void)
         WDTCSR |= (1<<WDE) | (1<<WDIE);  //enable watchdog + enable interrupt on watchdog
 #endif
     }
-    return 0;
+    //! return 0;
 
 //new prog...-->
-    wdt_enable(WDTO_1S);
+    //~ wdt_enable(WDTO_1S);
     //TickCounter = 0; //not needed as in AVR all is 0, especially global and static vars
     /*debug code to indicate restart*/
-    SPI_Init(); //init spi interface
-    LCD_Init(); //init lcd device
-    InitRFM69HW(); //for rfm cs
-        LCD_Clear();
-        LCD_Transmit((0x0F));
+    //~ SPI_Init(); //init spi interface
+    //~ LCD_Init(); //init lcd device
+    //~ InitRFM69HW(); //for rfm cs
+        //~ LCD_Clear();
+        //~ LCD_Transmit((0x0F));
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);
     for(;;)
     {
 
         sleep_enable();
         //debug off sleep_bod_disable();
-        DDRB = 0; //disable pins as outputs for saving energy
+        DDRB = 0; //disable all port B pins as outputs for saving energy
+        DDRC = 0; //disable all port C pins as outputs for saving energy
+        DDRD = 0; //disable all port D pins as outputs for saving energy
         sei();
         sleep_cpu();
         sleep_disable();
@@ -203,74 +212,77 @@ ISR(WDT_vect)
     LCD_Init(); //init lcd device
     InitRFM69HW(); //for rfm cs
 
-#if 1
-    if (TickCounter == 0x01)
-    {
-        InitRFM69HWtx();
-    } else
-    if ( !(TickCounter%4)) //every 4 seconds
-    {
-        WriteRFM69HW(RegFifo,0x90); //id
-        WriteRFM69HW(RegFifo,0xAA);
-        WriteRFM69HW(RegFifo,TickCounter & 0xFF); //working time
-        WriteRFM69HW(RegFifo,(TickCounter & 0xFF00) >> 8);
-        WriteRFM69HW(RegFifo,(TickCounter & 0xFF0000) >> 16);
-        WriteRFM69HW(RegFifo,(TickCounter & 0xFF000000) >> 24);
-        WriteRFM69HW(RegFifo,0x00);
-        WriteRFM69HW(RegFifo,0x00);
-        WriteRFM69HW(RegFifo,0x00);
-        WriteRFM69HW(RegFifo,0x00);
-        WriteRFM69HW(RegFifo,0x00);
-        WriteRFM69HW(RegFifo,0x00);
-        WriteRFM69HW(RegFifo,0x00);
-        WriteRFM69HW(RegFifo,0x00);
-        WriteRFM69HW(RegFifo,0x00);
-        WriteRFM69HW(RegFifo,0x70);
-    }
-        
-#else
-    if (TickCounter == 0x01)
-    {
-        InitRFM69HWrx();
-    } else
-    
-    if (ReadRFM69HW(RegIrqFlags2)&0x40)
-    {
-        unsigned long tempTick;
-        unsigned char sec,min,hour,day;
-        
-        r0 = ReadRFM69HW(RegFifo);//id
-        r1 = ReadRFM69HW(RegFifo);
-        *((char*) &tempTick+0) = ReadRFM69HW(RegFifo);  //timestamp
-        *((char*) &tempTick+1) = ReadRFM69HW(RegFifo);
-        *((char*) &tempTick+2) = ReadRFM69HW(RegFifo);
-        *((char*) &tempTick+3) = ReadRFM69HW(RegFifo);
-
-        while (ReadRFM69HW(RegIrqFlags2)&0x40)
+    if(WorkingMode == 2 /*MODE_TX*/){
+        if (TickCounter == 3)
         {
-            r0 = ReadRFM69HW(RegFifo);
+            InitRFM69HWtx();
+        } else
+        if ( !(TickCounter%4)) //every 4 seconds
+        {
+            WriteRFM69HW(RegFifo,0x90); //id
+            WriteRFM69HW(RegFifo,0xAA);
+            WriteRFM69HW(RegFifo,TickCounter & 0xFF); //working time
+            WriteRFM69HW(RegFifo,(TickCounter & 0xFF00) >> 8);
+            WriteRFM69HW(RegFifo,(TickCounter & 0xFF0000) >> 16);
+            WriteRFM69HW(RegFifo,(TickCounter & 0xFF000000) >> 24);
+            WriteRFM69HW(RegFifo,0x00);
+            WriteRFM69HW(RegFifo,0x00);
+            WriteRFM69HW(RegFifo,0x00);
+            WriteRFM69HW(RegFifo,0x00);
+            WriteRFM69HW(RegFifo,0x00);
+            WriteRFM69HW(RegFifo,0x00);
+            WriteRFM69HW(RegFifo,0x00);
+            WriteRFM69HW(RegFifo,0x00);
+            WriteRFM69HW(RegFifo,0x00);
+            WriteRFM69HW(RegFifo,0x70);
         }
-
-        sec = tempTick%60;
-        tempTick /= 60;
-        min = tempTick%60;
-        tempTick /= 60;
-        hour = tempTick%24;
-        tempTick /= 24;
-        day = tempTick%99;
+    } else
+    if (WorkingMode == 3) {       
+        if (TickCounter == 3)
+        {
+            InitRFM69HWrx();
+        } else
         
-        LCD_Clear();
-        LCD_Transmit(sec%10);
-        LCD_Transmit(sec/10);
-        LCD_TransmitDot(min%10, LCD_DOT);
-        LCD_Transmit(min/10);
-        LCD_TransmitDot(hour%10, LCD_DOT);
-        LCD_Transmit(hour/10);
-        LCD_TransmitDot(day%10, LCD_DOT|LCD_HASH);
-        LCD_TransmitDot(day/10, LCD_HASH);
-        //~ LCD_TransmitDot(0x0F, LCD_DOT|LCD_HASH);
-        //~ LCD_TransmitDot(0x0F, LCD_HASH);
-        return;
+        if (ReadRFM69HW(RegIrqFlags2)&0x40)
+        {
+            unsigned long tempTick;
+            unsigned char sec,min,hour,day;
+            
+            r0 = ReadRFM69HW(RegFifo);//id
+            r1 = ReadRFM69HW(RegFifo);
+            *((char*) &tempTick+0) = ReadRFM69HW(RegFifo);  //timestamp
+            *((char*) &tempTick+1) = ReadRFM69HW(RegFifo);
+            *((char*) &tempTick+2) = ReadRFM69HW(RegFifo);
+            *((char*) &tempTick+3) = ReadRFM69HW(RegFifo);
+
+            while (ReadRFM69HW(RegIrqFlags2)&0x40)
+            {
+                r0 = ReadRFM69HW(RegFifo);
+            }
+
+            sec = tempTick%60;
+            tempTick /= 60;
+            min = tempTick%60;
+            tempTick /= 60;
+            hour = tempTick%24;
+            tempTick /= 24;
+            day = tempTick%99;
+            
+            LCD_Clear();
+            LCD_Transmit(sec%10);
+            LCD_Transmit(sec/10);
+            LCD_TransmitDot(min%10, LCD_DOT);
+            LCD_Transmit(min/10);
+            LCD_TransmitDot(hour%10, LCD_DOT);
+            LCD_Transmit(hour/10);
+            LCD_TransmitDot(day%10, LCD_DOT|LCD_HASH);
+            LCD_TransmitDot(day/10, LCD_HASH);
+            //~ LCD_TransmitDot(0x0F, LCD_DOT|LCD_HASH);
+            //~ LCD_TransmitDot(0x0F, LCD_HASH);
+            return;
+        }
+    } else {
+        InitRFM69HWsleep();
     }
             //~ LCD_Transmit((c & 0x0F));
             //~ LCD_Transmit((c & 0xF0)>>4);
@@ -291,7 +303,6 @@ ISR(WDT_vect)
     //~ LCD_Transmit(255);
         //~ Delay1s();
     //~ }
-#endif
 
     //read and display debugging info
     r0 = ReadRFM69HW(RegOpMode); //debug 0x01

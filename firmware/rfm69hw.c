@@ -79,6 +79,18 @@ void InitRFM69HWCommon()
         WriteRFM69HW(CONFIG[i][0], CONFIG[i][1]);
 }
 
+void InitRFM69HWsleep()
+{
+    InitRFM69HWCommon();
+    WriteRFM69HW(RegOpMode,OPMODE_SLEEP);
+}
+
+void InitRFM69HWstndby()
+{
+    InitRFM69HWCommon();
+    WriteRFM69HW(RegOpMode,OPMODE_STNDBY);
+}
+
 void InitRFM69HWrx()
 {
     InitRFM69HWCommon();
