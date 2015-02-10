@@ -25,7 +25,6 @@
 
 #include <avr/pgmspace.h>   /* required by usbdrv.h */
 #include "usbdrv.h"
-#include "oddebug.h"        /* This is also an example for using debug macros */
 
 #include "spi.h"
 #include "lcd.h"

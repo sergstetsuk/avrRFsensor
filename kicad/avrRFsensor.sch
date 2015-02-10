@@ -37,7 +37,7 @@ $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
 Title ""
-Date "7 feb 2015"
+Date "10 feb 2015"
 Rev ""
 Comp ""
 Comment1 ""
@@ -48,7 +48,7 @@ $EndDescr
 Connection ~ 1500 2150
 Wire Wire Line
 	1500 1350 1500 1450
-Connection ~ 1050 7300
+Connection ~ 1000 6550
 Wire Wire Line
 	950  4650 1100 4650
 Wire Wire Line
@@ -107,12 +107,12 @@ $EndComp
 $Comp
 L GND #PWR2
 U 1 1 4E041C8A
-P 1050 7350
-F 0 "#PWR2" H 1050 7350 30  0001 C CNN
-F 1 "GND" H 1050 7280 30  0001 C CNN
-F 2 "" H 1050 7350 60  0001 C CNN
-F 3 "" H 1050 7350 60  0001 C CNN
-	1    1050 7350
+P 1000 6600
+F 0 "#PWR2" H 1000 6600 30  0001 C CNN
+F 1 "GND" H 1000 6530 30  0001 C CNN
+F 2 "" H 1000 6600 60  0001 C CNN
+F 3 "" H 1000 6600 60  0001 C CNN
+	1    1000 6600
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -144,12 +144,12 @@ $EndComp
 $Comp
 L CP1 C3
 U 1 1 4B61D8DC
-P 1050 7050
-F 0 "C3" H 1100 7150 50  0000 L CNN
-F 1 "4.7uF" H 1100 6950 50  0000 L CNN
-F 2 "" H 1050 7050 60  0001 C CNN
-F 3 "" H 1050 7050 60  0001 C CNN
-	1    1050 7050
+P 1000 6300
+F 0 "C3" H 1050 6400 50  0000 L CNN
+F 1 "4.7uF" H 1050 6200 50  0000 L CNN
+F 2 "" H 1000 6300 60  0001 C CNN
+F 3 "" H 1000 6300 60  0001 C CNN
+	1    1000 6300
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -207,7 +207,7 @@ F 3 "" H 1300 4650 60  0001 C CNN
 	1    1300 4650
 	1    0    0    -1  
 $EndComp
-Text GLabel 1250 6800 2    60   Input ~ 0
+Text GLabel 1200 6050 2    60   Input ~ 0
 VCC
 Text GLabel 1600 4350 2    60   Input ~ 0
 VCC
@@ -221,7 +221,7 @@ Wire Wire Line
 	1700 1000 1600 1000
 Wire Wire Line
 	1000 1000 1100 1000
-Text GLabel 1250 7300 2    60   Input ~ 0
+Text GLabel 1200 6550 2    60   Input ~ 0
 GND
 Text GLabel 900  1350 0    60   Input ~ 0
 GND
@@ -256,19 +256,19 @@ Wire Wire Line
 Text GLabel 5500 2600 2    60   Input ~ 0
 MOSI
 Wire Wire Line
-	1050 7250 1050 7350
+	1000 6500 1000 6600
 Wire Wire Line
-	1050 6750 1050 6850
-Connection ~ 1050 6800
+	1000 6000 1000 6100
+Connection ~ 1000 6050
 $Comp
 L VCC #PWR1
 U 1 1 54B791F6
-P 1050 6750
-F 0 "#PWR1" H 1050 6850 30  0001 C CNN
-F 1 "VCC" H 1050 6850 30  0000 C CNN
-F 2 "" H 1050 6750 60  0000 C CNN
-F 3 "" H 1050 6750 60  0000 C CNN
-	1    1050 6750
+P 1000 6000
+F 0 "#PWR1" H 1000 6100 30  0001 C CNN
+F 1 "VCC" H 1000 6100 30  0000 C CNN
+F 2 "" H 1000 6000 60  0000 C CNN
+F 3 "" H 1000 6000 60  0000 C CNN
+	1    1000 6000
 	1    0    0    -1  
 $EndComp
 Text GLabel 1300 2800 2    60   Input ~ 0
@@ -292,7 +292,7 @@ D+_INT0
 Wire Wire Line
 	1500 3850 1600 3850
 Text GLabel 1450 5600 2    60   Input ~ 0
-VCC +5
+VCC
 Text GLabel 1450 5300 2    60   Input ~ 0
 GND
 Wire Wire Line
@@ -349,9 +349,9 @@ Wire Wire Line
 Wire Wire Line
 	5500 2900 5300 2900
 Wire Wire Line
-	1250 7300 1050 7300
+	1200 6550 1000 6550
 Wire Wire Line
-	1250 6800 1050 6800
+	1200 6050 1000 6050
 Text GLabel 3200 4600 0    60   Input ~ 0
 GND
 Text GLabel 3200 2300 0    60   Input ~ 0
@@ -458,12 +458,6 @@ Wire Wire Line
 	5750 5950 5600 5950
 Wire Wire Line
 	5600 5850 5750 5850
-Text GLabel 1050 6000 0    60   Input ~ 0
-VCC +5
-Text GLabel 2200 6000 2    60   Input ~ 0
-VCC
-Wire Wire Line
-	1050 6000 1150 6000
 $Comp
 L R R6
 U 1 1 54BA358D
@@ -585,30 +579,8 @@ F 3 "" H 6450 4600 60  0000 C CNN
 $EndComp
 Wire Wire Line
 	6300 4600 5300 4600
-$Comp
-L DIODE D3
-U 1 1 54D5C585
-P 1350 6000
-F 0 "D3" H 1350 6100 40  0000 C CNN
-F 1 "DIODE" H 1350 5900 40  0000 C CNN
-F 2 "~" H 1350 6000 60  0000 C CNN
-F 3 "~" H 1350 6000 60  0000 C CNN
-	1    1350 6000
-	1    0    0    -1  
-$EndComp
-$Comp
-L DIODE D4
-U 1 1 54D5C594
-P 1900 6000
-F 0 "D4" H 1900 6100 40  0000 C CNN
-F 1 "DIODE" H 1900 5900 40  0000 C CNN
-F 2 "~" H 1900 6000 60  0000 C CNN
-F 3 "~" H 1900 6000 60  0000 C CNN
-	1    1900 6000
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	1550 6000 1700 6000
-Wire Wire Line
-	2100 6000 2200 6000
+Text Label 1500 2150 0    60   ~ 0
+aaa
+Text Notes 650  3200 0    60   ~ 0
+USB must give less 3.8v with two diodes
 $EndSCHEMATC
