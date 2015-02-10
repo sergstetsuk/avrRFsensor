@@ -31,6 +31,11 @@
 #include "lcd.h"
 #include "rfm69hw.h"
 
+#define MODE_UNDEF 0
+#define MODE_USB 1
+#define MODE_TX 2
+#define MODE_RX 3
+
 PROGMEM const char usbHidReportDescriptor[22] = {    /* USB report descriptor */
     0x06, 0x00, 0xff,              // USAGE_PAGE (Generic Desktop)
     0x09, 0x01,                    // USAGE (Vendor Usage 1)
@@ -147,22 +152,16 @@ int main(void)
         _delay_ms(1);
     }
     usbDeviceConnect();
-//new prog...-->
+
 #ifdef WDTCR //re-enable WDT for interrupt+reset
         WDTCR |= (1<<WDE) | (1<<WDIE);  //enable watchdog + enable interrupt on watchdog
 #else
         WDTCSR |= (1<<WDE) | (1<<WDIE);  //enable watchdog + enable interrupt on watchdog
 #endif
     //TickCounter = 0; //not needed as in AVR all is 0, especially global and static vars
-    /*debug code to indicate restart*/
-    //~ SPI_Init(); //init spi interface
-    //~ LCD_Init(); //init lcd device
-    //~ InitRFM69HW(); //for rfm cs
-//end new prog...<--
-/*end of debug code to indicate restart*/
+//USB_MODE needs regular usbPoll()
     sei();
-    for(;TickCounter<3 || WorkingMode == 1/*MODE_USB*/;){                /* main event loop */
-        //!wdt_reset();
+    for(;TickCounter<2 || WorkingMode == MODE_USB;){                /* main event loop */
         usbPoll();
 #ifdef WDTCR //re-enable WDT for interrupt+reset
         WDTCR |= (1<<WDE) | (1<<WDIE);  //enable watchdog + enable interrupt on watchdog
@@ -170,17 +169,7 @@ int main(void)
         WDTCSR |= (1<<WDE) | (1<<WDIE);  //enable watchdog + enable interrupt on watchdog
 #endif
     }
-    //! return 0;
-
-//new prog...-->
-    //~ wdt_enable(WDTO_1S);
-    //TickCounter = 0; //not needed as in AVR all is 0, especially global and static vars
-    /*debug code to indicate restart*/
-    //~ SPI_Init(); //init spi interface
-    //~ LCD_Init(); //init lcd device
-    //~ InitRFM69HW(); //for rfm cs
-        //~ LCD_Clear();
-        //~ LCD_Transmit((0x0F));
+//NOT USB_MODE works on WDT interrupt to reduce power consumption
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);
     for(;;)
     {
@@ -212,8 +201,8 @@ ISR(WDT_vect)
     LCD_Init(); //init lcd device
     InitRFM69HW(); //for rfm cs
 
-    if(WorkingMode == 2 /*MODE_TX*/){
-        if (TickCounter == 3)
+    if(WorkingMode == MODE_TX){
+        if (TickCounter == 2)
         {
             InitRFM69HWtx();
         } else
@@ -237,8 +226,8 @@ ISR(WDT_vect)
             WriteRFM69HW(RegFifo,0x70);
         }
     } else
-    if (WorkingMode == 3) {       
-        if (TickCounter == 3)
+    if (WorkingMode == MODE_RX) {       
+        if (TickCounter == 2)
         {
             InitRFM69HWrx();
         } else
