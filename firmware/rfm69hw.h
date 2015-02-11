@@ -676,6 +676,7 @@ unsigned char WriteRFM69HW(unsigned char, unsigned char);
 void InitRFM69HWstndby();
 void InitRFM69HWsleep();
 void InitRFM69HWrx();
+void InitRFM69HWrxusb();
 void InitRFM69HWtx();
 void InitRFM69HW();
 #endif /*RFM69HW_H*/

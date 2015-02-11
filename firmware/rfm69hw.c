@@ -54,7 +54,7 @@ void InitRFM69HWCommon()
         /*0x09*/{RegFrfLsb,FRFLSB_433},
         /*0x18*/{RegLna,LNA_ZIN_200|LNA_CURRENTGAIN|LNA_GAINSELECT_AUTO},  //LNA settings 200 Ohm
         /*0x19*/{RegRxBw,0x42}, //default
-        /*0x29*/{RegRssiThresh,160}, //default gain is 0xe4=228 (-Seisitivity/2) = -114dB
+        /*0x29*/{RegRssiThresh,228}, //default gain is 0xe4=228 (-Sensitivity/2) = -114dB
         /*0x2c*/{RegPreambleMsb,0x00}, //Preamble size msb = 0 default
         /*0x2d*/{RegPreambleLsb,0x03}, //Preamble size lsb = 3 default
         /*0x2e*/{RegSyncConfig,SYNCCONGIG_SYNC_ON|SYNCCONFIG_SYNC_SIZE_2},
@@ -89,6 +89,15 @@ void InitRFM69HWstndby()
 {
     InitRFM69HWCommon();
     WriteRFM69HW(RegOpMode,OPMODE_STNDBY);
+}
+
+void InitRFM69HWrxusb()
+{
+    //~ WriteRFM69HW(RegAutoModes,AUTOMODES_ENTER_CRCOK
+                             //~ |AUTOMODES_EXIT_FIFOEMPTY
+                             //~ |AUTOMODES_INTERMEDIATE_SLEEP); //enter crcok,exit fifoempty, interstate sleep
+    InitRFM69HWCommon();
+    WriteRFM69HW(RegOpMode,OPMODE_RX);
 }
 
 void InitRFM69HWrx()

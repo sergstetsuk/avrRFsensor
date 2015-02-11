@@ -35,23 +35,59 @@
 #define MODE_TX 2
 #define MODE_RX 3
 
-PROGMEM const char usbHidReportDescriptor[22] = {    /* USB report descriptor */
+#define PACKET_LENGTH 16
+#define EEPROM_LENGTH 512
+
+
+typedef struct {
+    unsigned int ID;
+    unsigned char WorkMode;
+    unsigned char CryptKey[16];
+    unsigned int Monitor[];
+    } RunTimeConfigStruc;
+
+RunTimeConfigStruc RunTimeConfig __attribute__ ((section(".eeprom")));
+
+PROGMEM const char usbHidReportDescriptor[USB_CFG_HID_REPORT_DESCRIPTOR_LENGTH] = {    /* USB report descriptor */
+    //~ 0x06, 0x00, 0xff,              // USAGE_PAGE (Generic Desktop)
+    //~ 0x09, 0x01,                    // USAGE (Vendor Usage 1)
+    //~ 0xa1, 0x01,                    // COLLECTION (Application)
+    //~ 0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
+    //~ 0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
+    //~ 0x75, 0x08,                    //   REPORT_SIZE (8)
+    //~ 0x95, 0x80,                    //   REPORT_COUNT (128)
+    //~ 0x09, 0x00,                    //   USAGE (Undefined)
+    //~ 0xb2, 0x02, 0x01,              //   FEATURE (Data,Var,Abs,Buf)
+    //~ 0xc0                           // END_COLLECTION
     0x06, 0x00, 0xff,              // USAGE_PAGE (Generic Desktop)
     0x09, 0x01,                    // USAGE (Vendor Usage 1)
     0xa1, 0x01,                    // COLLECTION (Application)
+    0xa1, 0x03,                    //  COLLECTION (ReportID)
+    0x85, 0x01,                    //   REPORT_ID (1)
+    0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
+    0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
+    0x75, 0x32,                    //   REPORT_SIZE (8)
+    0x95, 0x11,                    //   REPORT_COUNT (17) //PACKET_LENGTH+1
+    0x09, 0x00,                    //   USAGE (Undefined)
+    0xb2, 0x02, 0x01,              //   FEATURE (Data,Var,Abs,Buf)
+    0xc0,                          //  END_COLLECTION
+    0xa1, 0x03,                    //  COLLECTION (ReportID)
+    0x85, 0x02,                    //   REPORT_ID (1)
     0x15, 0x00,                    //   LOGICAL_MINIMUM (0)
     0x26, 0xff, 0x00,              //   LOGICAL_MAXIMUM (255)
     0x75, 0x08,                    //   REPORT_SIZE (8)
-    0x95, 0x80,                    //   REPORT_COUNT (128)
+    0x96, 0x00, 0x02,               //   REPORT_COUNT (512) //EEPROM_LENGTH
     0x09, 0x00,                    //   USAGE (Undefined)
     0xb2, 0x02, 0x01,              //   FEATURE (Data,Var,Abs,Buf)
+    0xc0,                          //  END_COLLECTION
     0xc0                           // END_COLLECTION
 };
 /* The following variables store the status of the current data transfer */
-static uchar    currentAddress;
-static uchar    bytesRemaining;
+static int    currentAddress;
+static int    bytesRemaining;
 static volatile unsigned long TickCounter;
 static uchar    WorkingMode;
+static uchar    operationMode;
 
 /* ------------------------------------------------------------------------- */
 
@@ -60,16 +96,36 @@ static uchar    WorkingMode;
  */
 uchar   usbFunctionRead(uchar *data, uchar len)
 {
-    uchar i;
-    if(len > bytesRemaining)
-        len = bytesRemaining;
-    //~ eeprom_read_block(data, (uchar *)0 + currentAddress, len);
-    for (i=0;i<len;i++) {
-        data[i] = ReadRFM69HW((currentAddress+i) & 0x7F);
+    if (operationMode == 1) {
+        uchar i=0;
+        if(len > bytesRemaining)
+            len = bytesRemaining;
+        //~ if (currentAddress == 0) {
+            //~ data[i++] = ReadRFM69HW(IrqFlags2);
+        //~ }
+        while (ReadRFM69HW(RegIrqFlags2)&0x40 && i<len) {
+            data[i++] = ReadRFM69HW(RegFifo);
+        }
+        while (i<len) {
+            data[i++] = 0;
+        }
+    } else
+    if (operationMode == 2) {
+        if(len > bytesRemaining)
+            len = bytesRemaining;
+        if(currentAddress<100)
+        eeprom_read_block(data, (uchar *)0 + currentAddress, len);
+        else {
+            int id;
+            char workmode;
+            id = eeprom_read_word(&RunTimeConfig.ID);
+            data[0] = id &0xff;
+            data[1] = (id>>8) & 0xff;
+            id = eeprom_read_word(&RunTimeConfig.ID);
+            workmode = eeprom_read_byte(&RunTimeConfig.WorkMode);
+            data[2] = workmode;
+        }
     }
-    data[0] = TickCounter&0x7F;
-    data[1] = TickCounter&0x7F00>>8;
-    data[2] = WorkingMode;
     currentAddress += len;
     bytesRemaining -= len;
     return len;
@@ -81,10 +137,15 @@ uchar   usbFunctionRead(uchar *data, uchar len)
 uchar   usbFunctionWrite(uchar *data, uchar len)
 {
     if(bytesRemaining == 0)
-        return 1;               /* end of transfer */
-    if(len > bytesRemaining)
-        len = bytesRemaining;
-    eeprom_write_block(data, (uchar *)0 + currentAddress, len);
+        return 1;
+    if (operationMode == 1) {
+    } else
+    if (operationMode == 2) { /*WRITE EEPROM*/
+        if(len > bytesRemaining)
+            len = bytesRemaining;
+        if (currentAddress<100) //!!!!! Fixme: timeout accurs wheen whole 512 byte block is written
+            eeprom_write_block(data, (uchar *)0 + currentAddress, len);
+    }
     currentAddress += len;
     bytesRemaining -= len;
     return bytesRemaining == 0; /* return 1 if this was the last chunk */
@@ -98,14 +159,44 @@ usbRequest_t    *rq = (void *)data;
 
     if((rq->bmRequestType & USBRQ_TYPE_MASK) == USBRQ_TYPE_CLASS){    /* HID class request */
         if(rq->bRequest == USBRQ_HID_GET_REPORT){  /* wValue: ReportType (highbyte), ReportID (lowbyte) */
-            /* since we have only one report type, we can ignore the report-ID */
-            bytesRemaining = 128;
-            currentAddress = 0;
+             switch(rq->wValue.bytes[0])
+            {
+                case 0x01:
+                            bytesRemaining = PACKET_LENGTH+1;
+                            currentAddress = 0;
+                            operationMode = 1; /*RECV PACKET*/
+                            break;
+                case 0x02:
+                            bytesRemaining = EEPROM_LENGTH;
+                            currentAddress = 0;
+                            operationMode = 2; /*READ EEPROM*/
+                            break;
+                default:
+                            bytesRemaining = 0;
+                            currentAddress = 0;
+                            operationMode = 0; /*reset operation mode*/
+
+            }
             return USB_NO_MSG;  /* use usbFunctionRead() to obtain data */
         }else if(rq->bRequest == USBRQ_HID_SET_REPORT){
-            /* since we have only one report type, we can ignore the report-ID */
-            bytesRemaining = 128;
-            currentAddress = 0;
+            switch(rq->wValue.bytes[0])
+            {
+                case 0x01: /*tx packet*/
+                            bytesRemaining = PACKET_LENGTH+1;
+                            currentAddress = 0;
+                            operationMode = 1; /*SEND PACKET*/
+                            break;
+                case 0x02: /*update eeprom data*/
+                            bytesRemaining = EEPROM_LENGTH;
+                            currentAddress = 0;
+                            operationMode = 2; /*WRITE EEPROM*/
+                            break;
+                default: /*error operation - clear all temp data*/
+                            bytesRemaining = 0;
+                            currentAddress = 0;
+                            operationMode = 0;
+                            break;
+            }
             return USB_NO_MSG;  /* use usbFunctionWrite() to receive data from host */
         }
     }else{
@@ -120,20 +211,11 @@ void hadAddressAssigned()
 }
 
 /* ------------------------------------------------------------------------- */
-
-typedef struct {
-    unsigned int ID;
-    unsigned char WorkMode;
-    unsigned char CryptKey[16];
-    unsigned int Monitor[];
-    } RunTimeConfigStruc;
-
-RunTimeConfigStruc RunTimeConfig __attribute__ ((section(".eeprom")));
-
 int main(void)
 {
     uchar   i;
-    WorkingMode = 0; //MODE_UNDEF
+    //~ WorkingMode = MODE_UNDEF;
+    WorkingMode = eeprom_read_byte(&RunTimeConfig.WorkMode);
     wdt_enable(WDTO_1S);
     /* Even if you don't use the watchdog, turn it off here. On newer devices,
      * the status of the watchdog (on/off, period) is PRESERVED OVER RESET!
@@ -142,7 +224,6 @@ int main(void)
      * That's the way we need D+ and D-. Therefore we don't need any
      * additional hardware initialization.
      */
-    odDebugInit();
     usbInit();
     usbDeviceDisconnect();  /* enforce re-enumeration, do this while interrupts are disabled! */
     i = 0;
@@ -160,6 +241,9 @@ int main(void)
     //TickCounter = 0; //not needed as in AVR all is 0, especially global and static vars
 //USB_MODE needs regular usbPoll()
     sei();
+    SPI_Init(); //init spi interface
+    LCD_Init(); //init lcd device
+    InitRFM69HW(); //for rfm cs
     for(;TickCounter<2 || WorkingMode == MODE_USB;){                /* main event loop */
         usbPoll();
 #ifdef WDTCR //re-enable WDT for interrupt+reset
@@ -207,8 +291,9 @@ ISR(WDT_vect)
         } else
         if ( !(TickCounter%4)) //every 4 seconds
         {
-            WriteRFM69HW(RegFifo,0x90); //id
-            WriteRFM69HW(RegFifo,0xAA);
+            int id = eeprom_read_word(&RunTimeConfig.ID);
+            WriteRFM69HW(RegFifo,id & 0xFF); //id
+            WriteRFM69HW(RegFifo,((id>>8) & 0xFF));
             WriteRFM69HW(RegFifo,TickCounter & 0xFF); //working time
             WriteRFM69HW(RegFifo,(TickCounter & 0xFF00) >> 8);
             WriteRFM69HW(RegFifo,(TickCounter & 0xFF0000) >> 16);
@@ -270,27 +355,11 @@ ISR(WDT_vect)
             return;
         }
     } else {
-        InitRFM69HWsleep();
+        if (TickCounter == 2)
+        {
+            InitRFM69HWrxusb(); //was sleep
+        }
     }
-            //~ LCD_Transmit((c & 0x0F));
-            //~ LCD_Transmit((c & 0xF0)>>4);
-    //~ r0 = ReadRFM69HW(RegOpMode); //debug 0x01
-    //~ r1 = ReadRFM69HW(RegIrqFlags1); //debug 0x27
-    //~ r2 = ReadRFM69HW(RegIrqFlags2); //debug 0x28
-        //~ Delay1s();
-    //~ LCD_Transmit((r2 & 0x0F));
-    //~ LCD_Transmit((r2 & 0xF0)>>4);
-    //~ //!~ LCD_Transmit(255);
-    //~ LCD_Transmit((r1 & 0x0F));
-    //~ LCD_Transmit((r1 & 0xF0)>>4);
-    //~ //!~ LCD_Transmit(255);
-    //~ LCD_Transmit((r0 & 0x0F));
-    //~ LCD_Transmit((r0 & 0xF0)>>4);
-    //~ //!~ LCD_Transmit(255);
-    //~ LCD_Transmit(255);
-    //~ LCD_Transmit(255);
-        //~ Delay1s();
-    //~ }
 
     //read and display debugging info
     r0 = ReadRFM69HW(RegOpMode); //debug 0x01

@@ -96,8 +96,10 @@ static void usage(char *myName)
 int main(int argc, char **argv)
 {
 usbDevice_t *dev;
-char        buffer[129];    /* room for dummy report ID */
+char        buffer[513];    /* room for dummy report ID */
 int         err;
+int         SIZE[] = {0,17,512};
+        int i, pos;
 
     if(argc < 2){
         usage(argv[0]);
@@ -106,20 +108,34 @@ int         err;
     if((dev = openDevice()) == NULL)
         exit(1);
     if(strcasecmp(argv[1], "-read") == 0){
-        int len = sizeof(buffer);
-        if((err = usbhidGetReport(dev, 0, buffer, &len)) != 0){
-            fprintf(stderr, "error reading data: %s\n", usbErrorMessage(err));
-        }else{
-            hexdump(buffer + 1, sizeof(buffer) - 1);
-        }
-    }else if(strcasecmp(argv[1], "-write") == 0){
-        int i, pos;
-        memset(buffer, 0, sizeof(buffer));
-        for(pos = 1, i = 2; i < argc && pos < sizeof(buffer); i++){
+        memset(buffer, 0xff, sizeof(buffer));
+        for(pos = 0, i = 2; i < argc && pos < sizeof(buffer); i++){
             pos += hexread(buffer + pos, argv[i], sizeof(buffer) - pos);
         }
-        if((err = usbhidSetReport(dev, buffer, sizeof(buffer))) != 0)   /* add a dummy report ID */
+        int len = SIZE[(int)buffer[0]];
+            hexdump(buffer, 1);
+            hexdump(buffer + 1, len);
+        if((err = usbhidGetReport(dev, buffer[0], buffer, &len)) != 0){
+            fprintf(stderr, "error reading data: %s\n", usbErrorMessage(err));
+        }else{
+            printf("\n");
+            hexdump(buffer, 1);
+            hexdump(buffer + 1, len);
+        }       
+    }else if(strcasecmp(argv[1], "-write") == 0){
+        memset(buffer, 0xff, sizeof(buffer));
+        for(pos = 0, i = 2; i < argc && pos < sizeof(buffer); i++){
+            pos += hexread(buffer + pos, argv[i], sizeof(buffer) - pos);
+        }
+            hexdump(buffer, 1);
+            hexdump(buffer + 1, SIZE[(int)buffer[0]]);
+        if((err = usbhidSetReport(dev, buffer, SIZE[(int)buffer[0]])) != 0) {  /* add a dummy report ID */
             fprintf(stderr, "error writing data: %s\n", usbErrorMessage(err));
+        }else{
+            printf("\n");
+            hexdump(buffer, 1);
+            hexdump(buffer + 1, SIZE[(int)buffer[0]]);
+        }
     }else{
         usage(argv[0]);
         exit(1);
