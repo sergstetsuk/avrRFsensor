@@ -13,13 +13,14 @@
 USBFLAGS=   `libusb-config --cflags`
 USBLIBS=    `libusb-config --libs`
 EXE_SUFFIX= .a
-
-# Use the following 3 lines on Windows and comment out the 3 above:
-#USBFLAGS=
-#USBLIBS=    -lhid -lusb -lsetupapi
-#EXE_SUFFIX= .exe
-
 CC=				gcc
+
+# Use the following 4 lines on Windows and comment out the 3 above:
+#~ USBFLAGS=
+#~ USBLIBS=    -lhid -lusb -lsetupapi
+#~ EXE_SUFFIX= .exe
+#~ CC=				i586-mingw32msvc-gcc
+
 CFLAGS=			-O -Wall $(USBFLAGS)
 LIBS=			$(USBLIBS)
 

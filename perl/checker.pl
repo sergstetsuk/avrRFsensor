@@ -2,8 +2,9 @@
 
 
 for(;;){
-    $res = `../commandline/hidtool.a -read 0x01`;
-    if( $res =~ m/0x(90) 0x(aa) 0x(..) 0x(..) 0x(..) 0x(..)/) {
+    $res = `../commandline/hidtool.a -readpacket`;
+    if(!($res =~ m/^0x00 0x00 0x00 0x00 0x00 0x00/) && ($res =~ m/^0x/)) {
+        $res =~ m/0x(..) 0x(..) 0x(..) 0x(..) 0x(..) 0x(..)/;
         $id = hex $2.$1;
         $int = hex $6.$5.$4.$3;
         
@@ -18,7 +19,7 @@ for(;;){
         print $lmsg.$msg;
         $res = `play -q -n -c1 synth sin %-12 sin %-9 sin %-5 sin %-2 fade h 0.1 0.25 0.1`;
         open(LOG_FILE,">>","checker.log");
-        print LOG_FILE $lmsg.$msg;
+        print LOG_FILE $lmsg.$msg.$res;
         close(LOG_FILE);
     }
     #~ sleep(1);
