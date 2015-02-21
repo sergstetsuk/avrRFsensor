@@ -34,6 +34,7 @@
 #define MODE_USB 1
 #define MODE_TX 2
 #define MODE_RX 3
+#define MODE_MON 4
 
 #define PACKET_LENGTH 16
 #define EEPROM_LENGTH 512

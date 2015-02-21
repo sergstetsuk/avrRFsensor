@@ -2,7 +2,7 @@
 
 
 for(;;){
-    $res = `../commandline/hidtool.a -readpacket`;
+    $res = `../commandline/hidtool.a -operation readpacket`;
     if(!($res =~ m/^0x00 0x00 0x00 0x00 0x00 0x00/) && ($res =~ m/^0x/)) {
         $res =~ m/0x(..) 0x(..) 0x(..) 0x(..) 0x(..) 0x(..)/;
         $id = hex $2.$1;

@@ -117,6 +117,7 @@ enum OPERATIONS {
     };
 enum MODES {
     MODE_UNDEF,
+    MODE_USB,
     MODE_TRANSMIT,
     MODE_RETRANSMIT,
     MODE_MONITOR,
@@ -155,10 +156,10 @@ int     i, pos;
                 operation = OP_WRITEPACKET;
             } else
             if(!strcasecmp(argv[i+1], "readconfig") ){
-                operation = OP_READPACKET;
+                operation = OP_READCONFIG;
             } else
             if(!strcasecmp(argv[i+1], "writeconfig") ){
-                operation = OP_WRITEPACKET;
+                operation = OP_WRITECONFIG;
             } else {
                 usage(argv[0]);
                 exit(1);
@@ -254,17 +255,17 @@ int     i, pos;
         if((err = usbhidGetReport(dev, buffer[0], buffer, &len)) != 0){
             fprintf(stderr, "error reading data: %s\n", usbErrorMessage(err));
         }else{
-            //hexdump(buffer + 1, len);
+            hexdump(buffer + 1, len);   //DEBUG todo: make human readable output
         }       
     } else
     if(operation == OP_WRITECONFIG){
         memset(buffer, 0xff, sizeof(buffer));
         buffer[0] = 0x02;
-        buffer[1] = mode & 0xFF;
-        buffer[2] = id & 0xFF;
-        buffer[3] = id>>8 & 0xFF;
+        buffer[1] = id & 0xFF;
+        buffer[2] = id>>8 & 0xFF;
+        buffer[3] = mode & 0xFF;
         int len = SIZE[(int)buffer[0]];
-        if((err = usbhidGetReport(dev, buffer[0], buffer, &len)) != 0){
+        if((err = usbhidSetReport(dev, buffer, len)) != 0) {  /* add a dummy report ID */
             fprintf(stderr, "error reading data: %s\n", usbErrorMessage(err));
         }else{
             //hexdump(buffer + 1, len);
