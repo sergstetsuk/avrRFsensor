@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-$prevint = 0;
+$prevint = -1;
 $rcvcounter = 0;
 $errcounter = 0;
 
@@ -16,6 +16,9 @@ for(;;){
             $hour = $int/3600%24;
             $day = $int/3600/24;
             
+            if($prevint <0) {
+                $prevint = $int - 4;
+            }
             $rcvcounter++;
             $errcounter += ($int - $prevint)/4-1;
             $prevint = $int;
