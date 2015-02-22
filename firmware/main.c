@@ -89,7 +89,7 @@ static int    bytesRemaining;
 static volatile unsigned long TickCounter;
 static uchar    WorkingMode;
 static uchar    operationMode;
-static uchar    fifoempty;
+static uchar    action;
 
 /* ------------------------------------------------------------------------- */
 
@@ -102,18 +102,29 @@ uchar   usbFunctionRead(uchar *data, uchar len)
         uchar i=0;
         if(len > bytesRemaining)
             len = bytesRemaining;
-        //~ if (currentAddress == 0) {
-            //~ data[i++] = ReadRFM69HW(IrqFlags2);
-        //~ }
-        if(ReadRFM69HW(RegIrqFlags2)&0x20 || !fifoempty) {    //FIFO LEVEL
-            fifoempty = 0;
-            while (ReadRFM69HW(RegIrqFlags2)&0x40 && i<len) {
+        if (currentAddress == 0) {
+            //~ if(action & 0x01/*readnexttime*/) {
+                //~ action |= 0x02/*readnow*/;
+            //~ }
+            //~ if(ReadRFM69HW(RegIrqFlags2) & IRQFLAGS2_FIFONOTEMPTY){
+                //~ action |= 0x01/*readnexttime*/;
+            //~ }
+            //~ if(ReadRFM69HW(RegIrqFlags2) & IRQFLAGS2_FIFOLEVEL){
+                //~ action |= 0x02/*readnow*/;
+            //~ }
+            action = 0;
+        }
+        //~ if(action & 0x02/*readnow*/) {
+        if(ReadRFM69HW(RegIrqFlags2) & IRQFLAGS2_CRCOK || action & 0x02/*readnow*/) {
+            while (ReadRFM69HW(RegIrqFlags2) & IRQFLAGS2_FIFONOTEMPTY && i<len) {
                 data[i++] = ReadRFM69HW(RegFifo);
             }
+            action |= 0x02/*readnow*/;
         }
         while (i<len) {
             data[i++] = 0;
         }
+        data[i-1] = ReadRFM69HW(RegIrqFlags2);
     } else
     if (operationMode == 2) {
         if(len > bytesRemaining)
@@ -170,7 +181,6 @@ usbRequest_t    *rq = (void *)data;
                             bytesRemaining = PACKET_LENGTH+1;
                             currentAddress = 0;
                             operationMode = 1; /*RECV PACKET*/
-                            fifoempty = 1;
                             break;
                 case 0x02:
                             bytesRemaining = EEPROM_LENGTH;
