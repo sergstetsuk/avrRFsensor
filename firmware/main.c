@@ -89,6 +89,7 @@ static int    bytesRemaining;
 static volatile unsigned long TickCounter;
 static uchar    WorkingMode;
 static uchar    operationMode;
+static uchar    fifoempty;
 
 /* ------------------------------------------------------------------------- */
 
@@ -104,8 +105,11 @@ uchar   usbFunctionRead(uchar *data, uchar len)
         //~ if (currentAddress == 0) {
             //~ data[i++] = ReadRFM69HW(IrqFlags2);
         //~ }
-        while (ReadRFM69HW(RegIrqFlags2)&0x40 && i<len) {
-            data[i++] = ReadRFM69HW(RegFifo);
+        if(ReadRFM69HW(RegIrqFlags2)&0x20 || !fifoempty) {    //FIFO LEVEL
+            fifoempty = 0;
+            while (ReadRFM69HW(RegIrqFlags2)&0x40 && i<len) {
+                data[i++] = ReadRFM69HW(RegFifo);
+            }
         }
         while (i<len) {
             data[i++] = 0;
@@ -166,6 +170,7 @@ usbRequest_t    *rq = (void *)data;
                             bytesRemaining = PACKET_LENGTH+1;
                             currentAddress = 0;
                             operationMode = 1; /*RECV PACKET*/
+                            fifoempty = 1;
                             break;
                 case 0x02:
                             bytesRemaining = EEPROM_LENGTH;
@@ -299,16 +304,16 @@ ISR(WDT_vect)
             WriteRFM69HW(RegFifo,(TickCounter & 0xFF00) >> 8);
             WriteRFM69HW(RegFifo,(TickCounter & 0xFF0000) >> 16);
             WriteRFM69HW(RegFifo,(TickCounter & 0xFF000000) >> 24);
-            WriteRFM69HW(RegFifo,0x00);
-            WriteRFM69HW(RegFifo,0x00);
-            WriteRFM69HW(RegFifo,0x00);
-            WriteRFM69HW(RegFifo,0x00);
-            WriteRFM69HW(RegFifo,0x00);
-            WriteRFM69HW(RegFifo,0x00);
-            WriteRFM69HW(RegFifo,0x00);
-            WriteRFM69HW(RegFifo,0x00);
-            WriteRFM69HW(RegFifo,0x00);
-            WriteRFM69HW(RegFifo,0x70);
+            WriteRFM69HW(RegFifo,0x71);
+            WriteRFM69HW(RegFifo,0x72);
+            WriteRFM69HW(RegFifo,0x73);
+            WriteRFM69HW(RegFifo,0x74);
+            WriteRFM69HW(RegFifo,0x75);
+            WriteRFM69HW(RegFifo,0x76);
+            WriteRFM69HW(RegFifo,0x77);
+            WriteRFM69HW(RegFifo,0x78);
+            WriteRFM69HW(RegFifo,0x79);
+            WriteRFM69HW(RegFifo,0x7A);
         }
     } else
     if (WorkingMode == MODE_RX) {       
