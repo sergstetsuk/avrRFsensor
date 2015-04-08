@@ -1,0 +1,35 @@
+# depslib dependency file v1.0
+1428134965 source:z:\home\serg\projects\avrrfsensor\commandline\hiddata.c
+	<stdio.h>
+	"hiddata.h"
+	<windows.h>
+	<setupapi.h>
+	"hidsdi.h"
+	<ddk/hidpi.h>
+	<string.h>
+	<usb.h>
+
+1354788998 z:\home\serg\projects\avrrfsensor\commandline\hiddata.h
+
+1424763087 z:\home\serg\projects\avrrfsensor\commandline\hidsdi.h
+	<pshpack4.h>
+	<ddk/hidusage.h>
+	<ddk/hidpi.h>
+	<poppack.h>
+
+1424759873 source:z:\home\serg\projects\avrrfsensor\commandline\hidtool.c
+	<stdio.h>
+	<string.h>
+	<stdlib.h>
+	"hiddata.h"
+	"../firmware/usbconfig.h"
+
+1425631066 z:\home\serg\projects\avrrfsensor\firmware\usbconfig.h
+
+1426488880 source:z:\home\serg\projects\avrrfsensor\commandline\avrrftool.c
+	<stdio.h>
+	<string.h>
+	<stdlib.h>
+	"hiddata.h"
+	"../firmware/usbconfig.h"
+

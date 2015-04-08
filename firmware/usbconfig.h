@@ -9,7 +9,6 @@
 
 #ifndef __usbconfig_h_included__
 #define __usbconfig_h_included__
-
 /*
 General Description:
 This file is an example configuration (with inline documentation) for the USB
@@ -204,7 +203,7 @@ section at the end of this file).
 /* define this macro to 1 if you want the function usbMeasureFrameLength()
  * compiled in. This function can be used to calibrate the AVR's RC oscillator.
  */
-#define USB_USE_FAST_CRC                0
+#define USB_USE_FAST_CRC                1
 /* The assembler module has two implementations for the CRC algorithm. One is
  * faster, the other is smaller. This CRC routine is only used for transmitted
  * messages where timing is not critical. The faster routine needs 31 cycles
@@ -235,7 +234,7 @@ section at the end of this file).
  * with libusb: 0x16c0/0x5dc.  Use this VID/PID pair ONLY if you understand
  * the implications!
  */
-#define USB_CFG_DEVICE_VERSION  0x00, 0x01
+#define USB_CFG_DEVICE_VERSION  0x05, 0x00
 /* Version number of the device: Minor number first, then major number.
  */
 #define USB_CFG_VENDOR_NAME     's', 'e', 'r', 'g', '_', 's', 't', 'e', 't', 's', 'u', 'k', '@', 'u', 'k', 'r', '.', 'n', 'e', 't'

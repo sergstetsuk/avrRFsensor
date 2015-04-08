@@ -13,19 +13,13 @@
 USBFLAGS=   `libusb-config --cflags`
 USBLIBS=    `libusb-config --libs`
 EXE_SUFFIX= .a
+
 CC=				gcc
-
-# Use the following 4 lines on Windows and comment out the 3 above:
-#~ USBFLAGS=
-#~ USBLIBS=    -lhid -lusb -lsetupapi
-#~ EXE_SUFFIX= .exe
-#~ CC=				i586-mingw32msvc-gcc
-
 CFLAGS=			-O -Wall $(USBFLAGS)
 LIBS=			$(USBLIBS)
 
-OBJ=		hidtool.o hiddata.o
-PROGRAM=	hidtool$(EXE_SUFFIX)
+OBJ=		avrrftool.o hiddata.o
+PROGRAM=	avrrftool$(EXE_SUFFIX)
 
 all: $(PROGRAM)
 

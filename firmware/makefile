@@ -124,7 +124,7 @@ help:
 	@echo "make ? ......... to show this help screen"
 
 #all: clean hex erase fuse flash #lock
-all: clean hex erase fuse flash
+all: clean hex erase fuse flash eeprom
 
 hex: $(EXEC)
 	avr-objcopy -j .text -j .data -O ihex $(EXEC) $(HEX)
@@ -150,6 +150,10 @@ lock:
 # rule for uploading firmware:
 flash: $(HEX)
 	$(AVRDUDE) -D -U flash:w:$(HEX):i
+
+# rule for uploading firmware:
+eeprom: $(HEX)
+	$(AVRDUDE) -D -U eeprom:w:eeprom_retransmit.hexinit:i
 
 # rule for reading flash and eeprom:
 read:

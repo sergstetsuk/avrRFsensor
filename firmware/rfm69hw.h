@@ -195,8 +195,16 @@
 #define BITRATELSB_115200 0x16
 //***********************************
 // RegFdevMsb, RegFdevLsb
+#define FDEVMSB_0600 0x00
+#define FDEVLSB_0600 0x0A
+#define FDEVMSB_1200 0x00
+#define FDEVLSB_1200 0x14
 #define FDEVMSB_2000 0x00
 #define FDEVLSB_2000 0x21
+#define FDEVMSB_2400 0x00
+#define FDEVLSB_2400 0x28
+#define FDEVMSB_3800 0x00
+#define FDEVLSB_3800 0x40
 #define FDEVMSB_5000 0x00  // Default
 #define FDEVLSB_5000 0x52  // Default
 #define FDEVMSB_7500 0x00
@@ -670,6 +678,18 @@
 #define TESTDAGC_IMPROVED_LOWBETA0 0x30  // Recommended default
 //***********************************
 //***********************************
+typedef struct {
+    unsigned short DstID;
+    unsigned short SrcID;
+    unsigned char Cmd;
+    unsigned char Options;
+    unsigned short ErrID;
+    unsigned long ErrTickCounter;
+    unsigned short ExtraInfo;
+    unsigned short DebugInfo;
+    } PacketStruc;
+
+//***********************************
 
 unsigned char ReadRFM69HW(unsigned char);
 unsigned char WriteRFM69HW(unsigned char, unsigned char);
@@ -679,4 +699,6 @@ void InitRFM69HWrx();
 void InitRFM69HWrxusb();
 void InitRFM69HWtx();
 void InitRFM69HW();
+void SendPacket (PacketStruc *);
+void ReceivePacket (PacketStruc *);
 #endif /*RFM69HW_H*/
