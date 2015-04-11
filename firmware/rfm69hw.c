@@ -108,7 +108,7 @@ void InitRFM69HWrx()
             /*0x5a*/WriteRFM69HW(RegTestPa1,TESTPA1_NORMAL);  //Rx
             /*0x5c*/WriteRFM69HW(RegTestPa2,TESTPA2_NORMAL);  //Rx
             /*0x58*/WriteRFM69HW(RegTestLna,TESTLNA_SENSITIVITY_HIGH);  //-120 dB Rx
-    WriteRFM69HW(RegRssiThresh,170); //default gain is 0xe4=228 (-Sensitivity/2) = -114dB
+    WriteRFM69HW(RegRssiThresh,228); //default gain is 0xe4=228 (-Sensitivity/2) = -114dB
     WriteRFM69HW(RegAutoModes,AUTOMODES_ENTER_CRCOK
                              |AUTOMODES_EXIT_FIFOEMPTY
                              |AUTOMODES_INTERMEDIATE_SLEEP); //enter crcok,exit fifoempty, interstate sleep
