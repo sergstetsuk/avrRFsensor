@@ -14,7 +14,7 @@ F_CPU   = 18000000
 #~ FUSE_L  = 0xE2
 #~ FUSE_H  = 0xDE
 FUSE_L  = 0xF7
-FUSE_H  = 0xDF
+FUSE_H  = 0xD7
 LOCK = 0x03
 AVRDUDE = avrdude -c usbasp -p $(DEVICE) # edit this line for your programmer
 
@@ -58,9 +58,9 @@ OBJECTS = $(SOURCES:.c=.o) usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o
 #        | +------------------ CKOUT (if 0: Clock output enabled)
 #        +-------------------- CKDIV8 (if 0: divide by 8)
 # ATMega*8 FUSE_H (Fuse high byte):
-# 0xde = 1 1 0 1   1 1 1 0
+# 0xde = 1 1 0 1   0 1 1 0
 #        ^ ^ ^ ^   ^ \-+-/
-#        | | | |   |   +------ BODLEVEL 0..2 (110 = 1.8 V)
+#        | | | |   |   +------ BODLEVEL 0..2 (111 = disabled)
 #        | | | |   + --------- EESAVE (preserve EEPROM over chip erase)
 #        | | | +-------------- WDTON (if 0: watchdog always on)
 #        | | +---------------- SPIEN (allow serial programming)
@@ -124,7 +124,7 @@ help:
 	@echo "make ? ......... to show this help screen"
 
 #all: clean hex erase fuse flash #lock
-all: clean hex erase fuse flash eeprom
+all: clean hex erase flash
 
 hex: $(EXEC)
 	avr-objcopy -j .text -j .data -O ihex $(EXEC) $(HEX)
