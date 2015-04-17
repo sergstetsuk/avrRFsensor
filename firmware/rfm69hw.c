@@ -114,12 +114,12 @@ void InitRFM69HWrx()
     WriteRFM69HW(RegAutoModes,AUTOMODES_ENTER_CRCOK
                              |AUTOMODES_EXIT_FIFOEMPTY
                              |AUTOMODES_INTERMEDIATE_SLEEP); //enter crcok,exit fifoempty, interstate sleep
-    /*0x0D*/WriteRFM69HW(RegListen1,LISTEN1_RESOL_IDLE_4100|LISTEN1_RESOL_RX_4100|LISTEN1_CRITERIA_RSSI|LISTEN1_END_00);  //
+    /*0x0D*/WriteRFM69HW(RegListen1,LISTEN1_RESOL_IDLE_4100|LISTEN1_RESOL_RX_4100|LISTEN1_CRITERIA_RSSI|LISTEN1_END_10);  //
     /*0x0E*/WriteRFM69HW(RegListen2,/*LISTEN2_COEFIDLE*/0x38);  //
     /*0x0F*/WriteRFM69HW(RegListen3,/*LISTEN2_COEFRX*/0x02);  //
-    //~ WriteRFM69HW(RegRxTimeout2,40); //(39pream++2sync+16data+2crc+1)/2 = 30
-    //~ WriteRFM69HW(RegOpMode,OPMODE_LISTEN_ON|OPMODE_STNDBY|OPMODE_SEQUENCER_ON);
-    WriteRFM69HW(RegOpMode,OPMODE_RX|OPMODE_SEQUENCER_ON);
+    WriteRFM69HW(RegRxTimeout2,40); //(39pream++2sync+16data+2crc+1)/2 = 30
+    WriteRFM69HW(RegOpMode,OPMODE_LISTEN_ON|OPMODE_STNDBY|OPMODE_SEQUENCER_ON);
+    //~ WriteRFM69HW(RegOpMode,OPMODE_RX|OPMODE_SEQUENCER_ON);
     //todo: try to make sleep instead of stndby
 }
 
