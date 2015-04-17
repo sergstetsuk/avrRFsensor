@@ -65,7 +65,7 @@ void InitRFM69HWCommon()
         /*0x2e*/{RegSyncConfig,SYNCCONGIG_SYNC_ON|SYNCCONFIG_SYNC_SIZE_2},
         /*0x2f*/{RegSyncValue1, 0x2D }, //attempt to make this compatible with sync1 byte of RFM12B lib
         /*0x30*/{RegSyncValue2, 0xE8 }, //
-        /*0x37*/{RegPacketConfig1,PACKET1_FORMAT_FIXED|PACKET1_DCFREE_MANCHESTER|PACKET1_CRC_ON|PACKET1_ADDRFILTER_OFF}, //default
+        /*0x37*/{RegPacketConfig1,PACKET1_FORMAT_FIXED|PACKET1_DCFREE_MANCHESTER|PACKET1_CRC_ON|PACKET1_ADDRFILTER_NODE}, //default
         /*0x38*/{RegPayloadLength,sizeof(PacketStruc)},
         /*0x3C*/{RegFifoThresh,FIFOTHRESH_TXSTART_FIFONOTEMPTY|(sizeof(PacketStruc)-1)/*FIFO LEVEL VALUE*/}, //Fifo level+1 = packet size
         /*0x3d*/{RegPacketConfig2, PACKET2_AUTORXRESTART_OFF|PACKET2_AES_OFF}, //RXRESTARTDELAY must match transmitter PA ramp-down time (bitrate dependent)
@@ -102,7 +102,7 @@ void InitRFM69HWrxusb()
     WriteRFM69HW(RegOpMode,OPMODE_RX|OPMODE_SEQUENCER_ON);
 }
 
-void InitRFM69HWrx()
+void InitRFM69HWrx(unsigned char nodeAddr)
 {
     InitRFM69HWCommon();
             /*0x11*/WriteRFM69HW(RegPaLevel,PALEVEL_PA0_ON|PALEVEL_PA1_OFF|PALEVEL_PA2_OFF|PALEVEL_OUTPUTPOWER_11111);  //Rx
@@ -110,6 +110,7 @@ void InitRFM69HWrx()
             /*0x5a*/WriteRFM69HW(RegTestPa1,TESTPA1_NORMAL);  //Rx
             /*0x5c*/WriteRFM69HW(RegTestPa2,TESTPA2_NORMAL);  //Rx
             /*0x58*/WriteRFM69HW(RegTestLna,TESTLNA_SENSITIVITY_HIGH);  //-120 dB Rx
+    WriteRFM69HW(RegNodeAdrs,nodeAddr); //default gain is 0xe4=228 (-Sensitivity/2) = -114dB
     WriteRFM69HW(RegRssiThresh,220); //default gain is 0xe4=228 (-Sensitivity/2) = -114dB
     WriteRFM69HW(RegAutoModes,AUTOMODES_ENTER_CRCOK
                              |AUTOMODES_EXIT_FIFOEMPTY

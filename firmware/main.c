@@ -98,6 +98,7 @@ static uchar    options;
 static uchar    debugmode;
 static uchar    State;
 static int      Timer1, Timer2;
+static unsigned short MyID;
 static unsigned short ForbidID;
 static uint16_t *     CurrentPtr;
 static uchar    CheckCounter;
@@ -279,6 +280,7 @@ int main(void)
 {
     uchar   i;
     debugmode = eeprom_read_byte(&RunTimeConfig.DebugMode);
+    MyID = eeprom_read_word((const uint16_t *)&RunTimeConfig.ID);
     WorkingMode = MODE_UNDEF;  //now main mode is RX
     wdt_enable(WDTO_250MS);
     /* RESET status: all port bits are inputs without pull-up.
@@ -287,7 +289,7 @@ int main(void)
      */
     SPI_Init(); //init spi interface
     InitRFM69HW(); //for rfm cs
-    InitRFM69HWrx(); //default mode is rx between transmissions
+    InitRFM69HWrx(MyID & 0xFF); //default mode is rx between transmissions
 
     usbInit();
     usbDeviceDisconnect();  /* enforce re-enumeration, do this while interrupts are disabled! */
@@ -312,7 +314,7 @@ int main(void)
     SetTimer(TM_RETRY);
     State = ST_ALRM;
     options |= OP_ALARMTRIGGER;
-    ErPacket.SrcID = eeprom_read_word((uint16_t*)&RunTimeConfig.ID);
+    ErPacket.SrcID = MyID;
     ErPacket.Cmd = CM_ALRM;
     ErPacket.ErrID = ErPacket.SrcID;
     ErPacket.Options = INFO_RESTART;
@@ -364,7 +366,7 @@ char SendNextCheck()
         return 0;
     }
         TxPacket.DstID = id;
-        TxPacket.SrcID = eeprom_read_word((uint16_t*)&RunTimeConfig.ID);
+        TxPacket.SrcID = MyID;
         TxPacket.Cmd = CM_TEST;
         TxPacket.ErrID = TxPacket.SrcID;
         TxPacket.ErrTickCounter = TickCounter;
@@ -436,14 +438,14 @@ ISR(WDT_vect)
     if (((ReadRFM69HW(RegAutoModes) & 0x03) == AUTOMODES_INTERMEDIATE_TRANSMITTER && 
         !(ReadRFM69HW(RegIrqFlags1) & IRQFLAGS1_AUTOMODE)) || Timer2 == 0)
     {
-        InitRFM69HWrx();
+        InitRFM69HWrx(MyID & 0xFF);
     }
     if (WorkingMode == MODE_RX) {
         if(!(PIND & (1<<PIND1))) {
                 //ALARM by link
             if(State == ST_WAIT || State == ST_CHCK) {
                 options |= OP_ALARMTRIGGER;
-                ErPacket.SrcID = eeprom_read_word((uint16_t*)&RunTimeConfig.ID);
+                ErPacket.SrcID = MyID;
                 ErPacket.Cmd = CM_ALRM;
                 ErPacket.ErrID = ErPacket.SrcID;
                 ErPacket.Options = INFO_NOLINK;
@@ -478,7 +480,7 @@ ISR(WDT_vect)
                 } else {
                     //init alarm ErPacket
                     //~ options |= OP_ALARMTRIGGER;
-                    ErPacket.SrcID = eeprom_read_word((uint16_t*)&RunTimeConfig.ID);
+                    ErPacket.SrcID = MyID;
                     ErPacket.Cmd = CM_ALRM;
                     ErPacket.ErrID = TxPacket.SrcID;
                     ErPacket.Options = INFO_NOANSWER;
@@ -538,7 +540,7 @@ ISR(WDT_vect)
                     options &= ~OP_RECEIVEDELAY;
                 //received packet processing procedure after one takt delay
             ReceivePacket(&RxPacket);
-            if(RxPacket.DstID != eeprom_read_word((const uint16_t *) &RunTimeConfig.ID)) {
+            if(RxPacket.DstID != MyID) {
                 //Not mine
                 //if ALARM - just display for portable device
                 if(RxPacket.Cmd == CM_ALRM) {
@@ -549,7 +551,7 @@ ISR(WDT_vect)
                 //FORM ANSWER I'M PRESENT (Maybe with status)
                 RxPacket.Cmd = CM_ANSW;
                 RxPacket.DstID = RxPacket.SrcID;
-                RxPacket.SrcID = eeprom_read_word((const uint16_t *) &RunTimeConfig.ID);
+                RxPacket.SrcID = MyID;
                 RxPacket.ErrID = RxPacket.SrcID;
                 RxPacket.ErrTickCounter = TickCounter;
                 RxPacket.Options = 0;
@@ -597,7 +599,7 @@ ISR(WDT_vect)
                 }
             } else
             if(RxPacket.Cmd == CM_EXEC) {
-                if(RxPacket.ErrID == eeprom_read_word((const uint16_t *) &RunTimeConfig.ID)) {
+                if(RxPacket.ErrID == MyID) {
                     options &= ~ OP_ALARMTRIGGER;
                     SetTimer(TM_WAIT_CHECK);
                     State = ST_WAIT;
