@@ -17,6 +17,8 @@ while(<MYINPUTFILE>) {
     $line = $_;
 	if ($line =~ m/^\s*check\s+(\d+)\s*$/) {
         $CHECKLIST{hex $1} = 1;
+    } elsif ($line =~ m/^\s*nocheck\s+(\d+)\s*$/) {
+        $NOCHECKLIST{hex $1} = 1;
     } elsif ($line =~ m/^\s*link\s+(\d+)\s*$/) {
         $LINKSLIST{hex $1} = 1;
     } elsif ($line =~ m/^\s*myid\s+(\d+)\s*$/) {
@@ -29,7 +31,7 @@ print "Введіть номер маячка:";
 $id = <>;
 chomp($id);
 
-if($CHECKLIST{$id} == 1 || $LINKSLIST{$id} == 1) {
+if($CHECKLIST{$id} == 1 || $LINKSLIST{$id} == 1 || $NOCHECKLIST{$id} == 1) {
     $commandline = sprintf("../commandline/avrrftool.a --operation writepacket --buffer 0x00 0x%02X 0x%02X 0x%02X 0x%02X 0x04 0x00 0x%02X 0x%02X",$id&0xFF, ($id>>8)&0xFF, $myid&0xFF, ($myid>>8)&0xFF, $id&0xFF, ($id>>8)&0xFF);
     print $commandline."\n";
     print `$commandline`;

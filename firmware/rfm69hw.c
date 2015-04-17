@@ -48,16 +48,17 @@ void InitRFM69HWCommon()
         /*0x02*/{RegDataModul,DATAMODUL_PACKET_MODE|DATAMODUL_FSK|DATAMODUL_NO_SHAPING},
         /*0x03*/{RegBitRateMsb,BITRATEMSB_1200},//BitRate WAS 0x02
         /*0x04*/{RegBitRateLsb,BITRATELSB_1200},   //WAS 0x40
-        /*0x05*/{RegFdevMsb,FDEVMSB_1200},  //Frequency deviation
-        /*0x06*/{RegFdevLsb,FDEVLSB_1200},
+        /*0x05*/{RegFdevMsb,FDEVMSB_5000},  //Frequency deviation
+        /*0x06*/{RegFdevLsb,FDEVLSB_5000},
         /*0x07*/{RegFrfMsb,FRFMSB_433},   //Frequency 433 MHz
         /*0x08*/{RegFrfMid,FRFMID_433},
         /*0x09*/{RegFrfLsb,FRFLSB_433},
-        /*0x0B*/{RegAfcCtrl,AFC_IMPROVED}, //low beta on = 1 for low modulation systems
-        /*0x18*/{RegLna,LNA_ZIN_200/*|LNA_CURRENTGAIN*/|LNA_GAINSELECT_AUTO},  //LNA settings 200 Ohm
-        /*0x19*/{RegRxBw,0x4F}, //default 0x55 3.1kHz
-        /*0x19*/{RegAfcBw,0x56}, //default 0x55 5.2kHz for auto freq correction
-        /*0x1E*/{RegAfcFei,0x0C}, //autoAFC on RX start on
+        //~ /*0x0B*/{RegAfcCtrl,AFC_IMPROVED}, //low beta on = 1 for low modulation systems
+        /*0x0B*/{RegAfcCtrl,AFC_STANDARD}, //low beta on = 0 for non-low modulation systems
+        /*0x18*/{RegLna,LNA_ZIN_200/*|LNA_CURRENTGAIN*/|LNA_GAINSELECT_MAX},  //LNA settings 200 Ohm
+        /*0x19*/{RegRxBw,0x56}, //default 0x55 3.1kHz 4F
+        //~ /*0x19*/{RegAfcBw,0x56}, //default 0x55 5.2kHz 56 for auto freq correction
+        //~ /*0x1E*/{RegAfcFei,0x0C}, //autoAFC on RX start on
         //~ /*0x29*/{RegRssiThresh,228}, //default gain is 0xe4=228 (-Sensitivity/2) = -114dB
         //~ /*0x2c*/{RegPreambleMsb,0x00}, //Preamble size msb = 0 default
         //~ /*0x2d*/{RegPreambleLsb,0x03}, //Preamble size lsb = 3 default
@@ -68,7 +69,8 @@ void InitRFM69HWCommon()
         /*0x38*/{RegPayloadLength,sizeof(PacketStruc)},
         /*0x3C*/{RegFifoThresh,FIFOTHRESH_TXSTART_FIFONOTEMPTY|(sizeof(PacketStruc)-1)/*FIFO LEVEL VALUE*/}, //Fifo level+1 = packet size
         /*0x3d*/{RegPacketConfig2, PACKET2_AUTORXRESTART_OFF|PACKET2_AES_OFF}, //RXRESTARTDELAY must match transmitter PA ramp-down time (bitrate dependent)
-        /*0x6f*/{RegTestDagc, TESTDAGC_IMPROVED_LOWBETA1}, // run DAGC continuously in RX mode, recommended AfcLowBetaOn=1 for low modulation systems
+        //~ /*0x6f*/{RegTestDagc, TESTDAGC_IMPROVED_LOWBETA1}, // run DAGC continuously in RX mode, recommended AfcLowBetaOn=1 for low modulation systems
+        /*0x6f*/{RegTestDagc, TESTDAGC_IMPROVED_LOWBETA0}, // run DAGC continuously in RX mode, recommended AfcLowBetaOn=1 for low modulation systems
         /*end   */ {255,0}
     };
 
@@ -108,16 +110,16 @@ void InitRFM69HWrx()
             /*0x5a*/WriteRFM69HW(RegTestPa1,TESTPA1_NORMAL);  //Rx
             /*0x5c*/WriteRFM69HW(RegTestPa2,TESTPA2_NORMAL);  //Rx
             /*0x58*/WriteRFM69HW(RegTestLna,TESTLNA_SENSITIVITY_HIGH);  //-120 dB Rx
-    WriteRFM69HW(RegRssiThresh,192); //default gain is 0xe4=228 (-Sensitivity/2) = -114dB
+    WriteRFM69HW(RegRssiThresh,220); //default gain is 0xe4=228 (-Sensitivity/2) = -114dB
     WriteRFM69HW(RegAutoModes,AUTOMODES_ENTER_CRCOK
                              |AUTOMODES_EXIT_FIFOEMPTY
                              |AUTOMODES_INTERMEDIATE_SLEEP); //enter crcok,exit fifoempty, interstate sleep
-    /*0x0D*/WriteRFM69HW(RegListen1,LISTEN1_RESOL_IDLE_4100|LISTEN1_RESOL_RX_4100|LISTEN1_CRITERIA_RSSI|LISTEN1_END_10);  //
+    /*0x0D*/WriteRFM69HW(RegListen1,LISTEN1_RESOL_IDLE_4100|LISTEN1_RESOL_RX_4100|LISTEN1_CRITERIA_RSSI|LISTEN1_END_00);  //
     /*0x0E*/WriteRFM69HW(RegListen2,/*LISTEN2_COEFIDLE*/0x38);  //
     /*0x0F*/WriteRFM69HW(RegListen3,/*LISTEN2_COEFRX*/0x02);  //
-    WriteRFM69HW(RegRxTimeout2,40); //(39pream++2sync+16data+2crc+1)/2 = 30
-    WriteRFM69HW(RegOpMode,OPMODE_LISTEN_ON|OPMODE_STNDBY|OPMODE_SEQUENCER_ON);
-    //~ WriteRFM69HW(RegOpMode,OPMODE_RX|OPMODE_SEQUENCER_ON);
+    //~ WriteRFM69HW(RegRxTimeout2,40); //(39pream++2sync+16data+2crc+1)/2 = 30
+    //~ WriteRFM69HW(RegOpMode,OPMODE_LISTEN_ON|OPMODE_STNDBY|OPMODE_SEQUENCER_ON);
+    WriteRFM69HW(RegOpMode,OPMODE_RX|OPMODE_SEQUENCER_ON);
     //todo: try to make sleep instead of stndby
 }
 
@@ -131,7 +133,7 @@ void InitRFM69HWtx()
             /*0x5c*/WriteRFM69HW(RegTestPa2,TESTPA2_20dBm);  //20dB Tx
 
     //~ WriteRFM69HW(RegPreambleMsb,0x00); //Preamble size msb = 0 default
-    WriteRFM69HW(RegPreambleLsb,0x27); //Preamble size must be enough for listening mode period
+    WriteRFM69HW(RegPreambleLsb,40); //Preamble size must be enough for listening mode period
 
     WriteRFM69HW(RegAutoModes,AUTOMODES_ENTER_FIFOLEVEL
                              |AUTOMODES_EXIT_PACKETSENT
