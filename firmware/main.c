@@ -46,7 +46,7 @@
 #define TM_NOW 0
 #define TM_RETRY 2000
 #define TM_WAIT_CHECK 60000
-#define TM_WAIT_ALARM 15000
+#define TM_WAIT_ALARM 10000  //was 15000
 #define TM_WAIT_ALARM_LONG 60000
 #define TM_FAST OneTick
 #define TM_TRANSMIT 1000
@@ -401,7 +401,7 @@ char SendNextRetransmit(PacketStruc* Packet)
         do {
             CurrentPtr++;
             id = eeprom_read_word(CurrentPtr);
-            if((id & ~0x8000) == TxPacket.ErrID) {
+            if((id & ~0x8000) == TxPacket.ErrID && TxPacket.Cmd == CM_EXEC) {
                 Packet->DstID = id & ~0x8000;
                 InitRFM69HWtx();
                 SendPacket(Packet);

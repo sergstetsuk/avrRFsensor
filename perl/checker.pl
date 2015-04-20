@@ -85,7 +85,13 @@ for(;;){
 
             if($cmd == 0x02) {   #command not CM_ANSW
                 if($LOGLEVEL > 2){
-                    print "ANSWER $srcid Tick: $errtick\n"; #debug
+                    $sec = int ($errtick/4)%60;
+                    $min = int ($errtick/4)/60%60;
+                    $hour = int ($errtick/4)/3600%24;
+                    $day = int ($errtick/4)/3600/24;
+
+                    $msg = sprintf("ANSWER %d Tick: %d (%dd %02d:%02d:%02d)",$srcid,$errtick,$day,$hour,$min,$sec); #debug
+                    print "$msg\n";
                 }
                 if($srcid == $CHECKLIST[$checkitem] && $dstid == $MYID) {
                     $CheckRetryCnt = 0;
@@ -105,7 +111,7 @@ for(;;){
         $filename = $CONFIGPIC{0};
         `xfconf-query -c xfce4-desktop -p /backdrop/screen0/monitorLVDS/workspace0/last-image -n -t string -s $filename`;
         $Timer1 = $Now+365*24*60*60;    #too far from now.
-    } elsif($Timer2 <= $Now) {
+    } elsif($Timer2 <= $Now && 0) {
         if ($CheckRetryCnt++ < 5){
             $checkid = sprintf("0x%02X 0x%02X", $CHECKLIST[$checkitem] & 0xFF, ($CHECKLIST[$checkitem]>>8) & 0xFF);
             $myid = sprintf("0x%02X 0x%02X", $MYID & 0xFF, ($MYID>>8) & 0xFF);
@@ -125,6 +131,8 @@ for(;;){
             }
         }
     }
+    print ".";
+    sleep(1);
 }
 
 
