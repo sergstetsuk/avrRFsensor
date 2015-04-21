@@ -66,6 +66,7 @@ void InitRFM69HWCommon()
         /*0x2f*/{RegSyncValue1, 0x2D }, //attempt to make this compatible with sync1 byte of RFM12B lib
         /*0x30*/{RegSyncValue2, 0xE8 }, //
         /*0x37*/{RegPacketConfig1,PACKET1_FORMAT_FIXED|PACKET1_DCFREE_MANCHESTER|PACKET1_CRC_ON|PACKET1_ADDRFILTER_NODE}, //default
+        //~ /*0x37*/{RegPacketConfig1,PACKET1_FORMAT_FIXED|PACKET1_DCFREE_MANCHESTER|PACKET1_CRC_ON|PACKET1_ADDRFILTER_OFF}, //default
         /*0x38*/{RegPayloadLength,sizeof(PacketStruc)},
         /*0x3C*/{RegFifoThresh,FIFOTHRESH_TXSTART_FIFONOTEMPTY|(sizeof(PacketStruc)-1)/*FIFO LEVEL VALUE*/}, //Fifo level+1 = packet size
         /*0x3d*/{RegPacketConfig2, PACKET2_AUTORXRESTART_OFF|PACKET2_AES_OFF}, //RXRESTARTDELAY must match transmitter PA ramp-down time (bitrate dependent)

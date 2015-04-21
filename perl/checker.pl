@@ -70,6 +70,7 @@ for(;;){
     $res = `../commandline/avrrftool.a --operation readpacket`;
     if(!($res =~ m/^0x00 0x00 0x00 0x00 0x00 0x00/) && ($res =~ m/^0x/)) {
         if($res =~ m/^0x(..) 0x(..) 0x(..) 0x(..) 0x(..) 0x(..) 0x(..) 0x(..) 0x(..) 0x(..) 0x(..) 0x(..) 0x(..) 0x(..) 0x(..) 0x(..)$/) {
+            print "\n"; #after points
             if($LOGLEVEL >3) {
                 print $res;
             }
@@ -164,7 +165,8 @@ sub PlayAlarm(){
     $filename = $CONFIGAUDIO{hex $noanswerid};
     #~ `play -q -n -c1 synth sin %-12 sin %-9 sin %-5 sin %-2 fade h 0.1 0.25 0.1`;
     #~ `play -q -n -c1 synth 0.5 sine 1600-100 synth 0.6 sine fmod 200-1400`
-    `play -q "|sox -n -p synth 2 sin 300-2000" "|sox -n -p synth  2 sin 2000-300"`;
+    #~ `play -q "|sox -n -p synth 2 sin 300-2000" "|sox -n -p synth  2 sin 2000-300"`;
+    `play -q audio/siren.ogg`;
     `play -q $filename`;
     $Timer1 = $Now+10;
 }
