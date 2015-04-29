@@ -441,7 +441,9 @@ ISR(WDT_vect)
         InitRFM69HWrx(MyID & 0xFF);
     }
     if (WorkingMode == MODE_RX) {
-        if(!(PIND & (1<<PIND1))) {
+//~ #define LINK_MASK (1<<PIND0) || (1<<PIND1) || (1<<PIND2) || (1<<PIND3) || (1<<PIND4) || (1<<PIND5) || (1<<PIND6) || (1<<PIND7)
+        //~ if(PIND ^ LINK_MASK) {
+        if(!(PIND & (1<<PIND1)) || !(PIND & (1<<PIND2))) {
                 //ALARM by link
             if(State == ST_WAIT || State == ST_CHCK) {
                 options |= OP_ALARMTRIGGER;

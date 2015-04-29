@@ -14,7 +14,7 @@ F_CPU   = 18000000
 #~ FUSE_L  = 0xE2
 #~ FUSE_H  = 0xDE
 FUSE_L  = 0xF7
-FUSE_H  = 0xD7
+FUSE_H  = 0xD5
 LOCK = 0x03
 AVRDUDE = avrdude -c usbasp -p $(DEVICE) # edit this line for your programmer
 
