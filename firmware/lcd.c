@@ -40,13 +40,13 @@ void inline LCD_Init()
 
 void inline LCD_Load()
 {
-    LCD_PORT ^= (1<<LCD_LOAD);  //Load data strobe
-    LCD_PORT ^= (1<<LCD_LOAD);
+    LCD_PORT |= (1<<LCD_LOAD);  //Load data strobe
+    LCD_PORT &= ~(1<<LCD_LOAD);
 }
 void LCD_TransmitDot(char cData, char isdot)
 {
     char tData = 0;
-    if (cData < sizeof(CHARTABLE)/sizeof(CHARTABLE[0]))
+    if (!(isdot & LCD_RAW) && cData < sizeof(CHARTABLE)/sizeof(CHARTABLE[0]))
     {
         tData = pgm_read_byte(&CHARTABLE[(int)cData]);
     }

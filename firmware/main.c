@@ -97,6 +97,7 @@ static uchar    operationMode;
 static uchar    options;
 static uchar    debugmode;
 static uchar    State;
+static uchar    minRSSIValue;
 static int      Timer1, Timer2;
 static unsigned short MyID;
 static unsigned short ForbidID;
@@ -110,6 +111,7 @@ static PacketStruc ErPacket;
 #define OP_ALARMTRIGGER 0x02
 #define OP_RECEIVEDELAY 0x04
 #define OP_TRYADJACENT 0x08
+#define OP_TRIGGERONCE 0x10
 
 enum COMMANDS {
     CM_UNDF,
@@ -172,11 +174,19 @@ uchar   usbFunctionRead(uchar *data, uchar len)
     bytesRemaining -= len;
     //todo: maybe here we can turn on debugging information remotely
     if(debugmode == 1 && bytesRemaining <= 5 && bytesRemaining > 0) {
+            //init Analog Comparator
+            ADCSRB = (0<<ACME);
+            ACSR = (0<<ACD)|(0<<ACBG)|(1<<ACI)|(0<<ACIE)|(0<<ACIC);
+            DIDR1 = (1<<AIN1D)|(1<<AIN0D);
+            //ACMPInit()
+
         data[len-1] = ReadRFM69HW(RegIrqFlags1); //debug
         data[len-2] = ReadRFM69HW(RegIrqFlags2); //debug
-        data[len-3] = ReadRFM69HW(RegRssiValue); //debug
+        data[len-3] = minRSSIValue;//ReadRFM69HW(RegRssiValue); //debug
         data[len-4] = ReadRFM69HW(RegOpMode); //debug
         data[len-5] = ReadRFM69HW(RegAutoModes); //debug
+        data[len-6] = ACSR;
+        minRSSIValue = 255;
     }
     return len;
 }
@@ -329,7 +339,6 @@ int main(void)
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);
     for(;;)
     {
-
         sleep_enable();
         //debug off sleep_bod_disable();
         DDRB = 0; //disable all port B pins as outputs for saving energy
@@ -432,20 +441,36 @@ ISR(WDT_vect)
 //watchdog interrupt is very cosy for use in powerdown mode
     TickCounter++;  //increment global tick counter
     SPI_Init(); //init spi interface
+    LCD_Init(); //init lcd interface
     InitRFM69HW(); //for rfm cs
     Timer1--;
     Timer2--;
+    //init Analog Comparator
+    ADCSRB = (0<<ACME);
+    ACSR = (0<<ACD)|(0<<ACBG)|(1<<ACI)|(0<<ACIE)|(0<<ACIC);
+    DIDR1 = (1<<AIN1D)|(1<<AIN0D);
+    //ACMPInit()
+    //......................
+    if (ReadRFM69HW(RegIrqFlags1) & IRQFLAGS1_RXREADY)  //level measuring
+    {
+        uchar rssi = ReadRFM69HW(RegRssiValue);
+        if(minRSSIValue>rssi && rssi>0) 
+        {
+            minRSSIValue = rssi;
+        }
+    }
     if (((ReadRFM69HW(RegAutoModes) & 0x03) == AUTOMODES_INTERMEDIATE_TRANSMITTER && 
         !(ReadRFM69HW(RegIrqFlags1) & IRQFLAGS1_AUTOMODE)) || Timer2 == 0)
     {
         InitRFM69HWrx(MyID & 0xFF);
     }
     if (WorkingMode == MODE_RX) {
-//~ #define LINK_MASK (1<<PIND0) || (1<<PIND1) || (1<<PIND2) || (1<<PIND3) || (1<<PIND4) || (1<<PIND5) || (1<<PIND6) || (1<<PIND7)
+//!~ #define LINK_MASK (1<<PIND0) || (1<<PIND1) || (1<<PIND2) || (1<<PIND3) || (1<<PIND4) || (1<<PIND5) || (1<<PIND6) || (1<<PIND7)
         //~ if(PIND ^ LINK_MASK) {
-        if(!(PIND & (1<<PIND1)) || !(PIND & (1<<PIND2))) {
+        //~ if(!(PIND & (1<<PIND1)) || !(PIND & (1<<PIND2))) {
+        if(ACSR&(1<<ACO)) {
                 //ALARM by link
-            if(State == ST_WAIT || State == ST_CHCK) {
+            if((State == ST_WAIT || State == ST_CHCK) && options&OP_TRIGGERONCE) {
                 options |= OP_ALARMTRIGGER;
                 ErPacket.SrcID = MyID;
                 ErPacket.Cmd = CM_ALRM;
@@ -457,6 +482,9 @@ ISR(WDT_vect)
                 InitAlarm();
                 State = ST_ALRM;
             }
+            options |= OP_TRIGGERONCE;
+        } else {
+            options &= ~OP_TRIGGERONCE;
         }
 
         if(Timer1 == 0){
@@ -542,6 +570,18 @@ ISR(WDT_vect)
                     options &= ~OP_RECEIVEDELAY;
                 //received packet processing procedure after one takt delay
             ReceivePacket(&RxPacket);
+    //DEBUG LCD OPERATION ALARM AND LEVEL DISPLAY
+            //~ if(RxPacket.Cmd == CM_ALRM) {
+        //~ LCD_Clear();
+        //~ LCD_TransmitDot((TickCounter>>2)&0x0F,0);
+        //~ LCD_TransmitDot(minRSSIValue&0x0F,LCD_HASH);
+        //~ LCD_TransmitDot((minRSSIValue>>4)&0x0F,LCD_HASH);
+        //~ LCD_TransmitDot(0,LCD_RAW);
+        //~ LCD_TransmitDot(RxPacket.SrcID&0x0F,0);
+        //~ LCD_TransmitDot((RxPacket.SrcID>>4)&0x0F,0);
+        //~ minRSSIValue = 255;
+            //~ }
+    //END DEBUG
             if(RxPacket.DstID != MyID) {
                 //Not mine
                 //if ALARM - just display for portable device
