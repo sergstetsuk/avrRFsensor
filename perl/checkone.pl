@@ -32,7 +32,7 @@ $id = <>;
 chomp($id);
 
 if($CHECKLIST{$id} == 1 || $LINKSLIST{$id} == 1 || $NOCHECKLIST{$id} == 1) {
-    $commandline = sprintf("../commandline/avrrftool.a --operation writepacket --buffer 0x00 0x%02X 0x%02X 0x%02X 0x%02X 0x01 0x00",$id&0xFF, ($id>>8)&0xFF, $myid&0xFF, ($myid>>8)&0xFF);
+    $commandline = sprintf("../commandline/avrrftool.a --operation writepacket --buffer 0x00 0x%02X 0x%02X 0x01 0x00",$id, $myid);
     print $commandline."\n";
     print `$commandline`;
 }

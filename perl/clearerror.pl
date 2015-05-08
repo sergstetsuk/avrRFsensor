@@ -32,7 +32,7 @@ $id = <>;
 chomp($id);
 
 if($CHECKLIST{$id} == 1 || $LINKSLIST{$id} == 1 || $NOCHECKLIST{$id} == 1) {
-    $commandline = sprintf("../commandline/avrrftool.a --operation writepacket --buffer 0x00 0x%02X 0x%02X 0x%02X 0x%02X 0x04 0x00 0x%02X 0x%02X",$id&0xFF, ($id>>8)&0xFF, $myid&0xFF, ($myid>>8)&0xFF, $id&0xFF, ($id>>8)&0xFF);
+    $commandline = sprintf("../commandline/avrrftool.a --operation writepacket --buffer 0x00 0x%02X 0x%02X 0x04 0x00 0x%02X",$id, $myid, $id);
     print $commandline."\n";
     print `$commandline`;
     sleep(3);
@@ -41,7 +41,7 @@ if($CHECKLIST{$id} == 1 || $LINKSLIST{$id} == 1 || $NOCHECKLIST{$id} == 1) {
     sleep(1);
 } else {
     foreach $linkid (keys(%LINKSLIST)) {
-        $commandline = sprintf("../commandline/avrrftool.a --operation writepacket --buffer 0x00 0x%02X 0x%02X 0x%02X 0x%02X 0x04 0x00 0x%02X 0x%02X",$linkid&0xFF, ($linkid>>8)&0xFF, $myid&0xFF, ($myid>>8)&0xFF, $id&0xFF, ($id>>8)&0xFF);
+        $commandline = sprintf("../commandline/avrrftool.a --operation writepacket --buffer 0x00 0x%02X 0x%02X 0x04 0x00 0x%02X",$linkid, $myid, $id);
         print $commandline."\n";
         print `$commandline`;
         sleep(3);

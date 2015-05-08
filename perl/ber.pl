@@ -10,7 +10,7 @@ for(;;){
     #~ $sent++;
     #~ sleep(2);
     $res = `../commandline/avrrftool.a -o readpacket`;
-    if($res =~ m/^0x0[^0] 0x00 0x0[^0] 0x00 0x0[^0]/) {
+    if($res =~ m/^0x0[^0] 0x0[^0] 0x0[^0]/) {
         print "$res";
         $recv++;
     }

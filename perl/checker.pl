@@ -74,14 +74,14 @@ for(;;){
             if($LOGLEVEL >3) {
                 print $res;
             }
-            $dstid = hex $2.$1;
-            $srcid = hex $4.$3;
-            $cmd = hex $5;
-            $options = hex $6;
-            $errid = hex $8.$7;
-            $errtick = hex $12.$11.$10.$9;
-            $extrainfo = hex $14.$13;
-            $debuginfo = hex $16.$15;
+            $dstid = hex $1;
+            $srcid = hex $2;
+            $cmd = hex $3;
+            $options = hex $4;
+            $errtick = hex $8.$7.$6.$5;
+            $errid = hex $9;
+            $extrainfo = hex $10;
+            $debuginfo = hex $11;
             $noanswerid = $extrainfo;
 
             if($cmd == 0x02) {   #command not CM_ANSW
@@ -114,8 +114,8 @@ for(;;){
         $Timer1 = $Now+365*24*60*60;    #too far from now.
     } elsif($Timer2 <= $Now && 0) {
         if ($CheckRetryCnt++ < 5){
-            $checkid = sprintf("0x%02X 0x%02X", $CHECKLIST[$checkitem] & 0xFF, ($CHECKLIST[$checkitem]>>8) & 0xFF);
-            $myid = sprintf("0x%02X 0x%02X", $MYID & 0xFF, ($MYID>>8) & 0xFF);
+            $checkid = sprintf("0x%02X", $CHECKLIST[$checkitem]);
+            $myid = sprintf("0x%02X", $MYID);
             if ($LOGLEVEL > 2){
                 print "CHECK REQUEST ".$CHECKLIST[$checkitem]." CNT: $CheckRetryCnt\n"; #debug
                 #~ print "../commandline/avrrftool.a -operation writepacket -buffer 0x00 $checkid 0x01 0x00 0x01\n"; #debug
