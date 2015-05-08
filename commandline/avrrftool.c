@@ -15,12 +15,16 @@
 
 /* ------------------------------------------------------------------------- */
 typedef struct __attribute__((packed)){
-    unsigned short ID;
+    unsigned char ID;
     unsigned char DebugMode;
     unsigned char CryptKey[16];
-    unsigned short Monitor[30];
+    unsigned char Monitor[30];
     } RunTimeConfigStruc;
 /* ------------------------------------------------------------------------- */
+enum LIST_ENDS {
+    END_ALARM_LIST = 0xfe,
+    END_CHECK_LIST = 0xff
+};
 
 static char *usbErrorMessage(int errCode)
 {
@@ -140,12 +144,13 @@ int main(int argc, char **argv)
 {
     usbDevice_t *dev;
     char    buffer[513];    /* room for dummy report ID */
-    unsigned short     checklist[30];
-    unsigned short     alarmlist[30];
+    unsigned char     checklist[30];
+    unsigned char     alarmlist[30];
     int     err, checkcnt=0, alarmcnt=0;
     int     SIZE[] = {0,17,513};
     //~ char*     MODES[]={"undefined","usb","transmit","retransmit","monitor"};
-    int     operation=OP_UNDEF, id=0, debugmode=0;
+    unsigned char     id=0, debugmode=0;
+    int     operation=OP_UNDEF;
     int     i, pos;
     RunTimeConfigStruc * RunTimeConfig = (RunTimeConfigStruc*) (buffer+1);
 
@@ -191,7 +196,7 @@ int main(int argc, char **argv)
                 usage(argv[0]);
                 exit(1);
             }
-            id = (int)strtol(argv[i+1], NULL, 0);
+            id = (unsigned char)strtol(argv[i+1], NULL, 0);
             i++;
         } else
         if(!strcasecmp(argv[i], "--debugmode") || !strcasecmp(argv[i], "-d") ){
@@ -199,7 +204,7 @@ int main(int argc, char **argv)
                 usage(argv[0]);
                 exit(1);
             }
-            debugmode = (int)strtol(argv[i+1], NULL, 0);
+            debugmode = (unsigned char)strtol(argv[i+1], NULL, 0);
             i++;
         } else
         if(!strcasecmp(argv[i], "--buffer") || !strcasecmp(argv[i], "-b")){
@@ -210,13 +215,13 @@ int main(int argc, char **argv)
         } else
         if(!strcasecmp(argv[i], "--checklist") || !strcasecmp(argv[i], "-c")){
             for(checkcnt = 0, i++; i < argc && checkcnt+alarmcnt < sizeof(RunTimeConfig->Monitor)/sizeof(RunTimeConfig->Monitor[0]) && (argv[i][0] != '-'); i++, checkcnt++){
-                checklist[checkcnt] = (int)strtol(argv[i], NULL, 0);
+                checklist[checkcnt] = (unsigned char)strtol(argv[i], NULL, 0);
             }
             i--;
         } else
         if(!strcasecmp(argv[i], "--alarmlist") || !strcasecmp(argv[i], "-a")){
             for(alarmcnt = 0, i++; i < argc && checkcnt+alarmcnt < sizeof(RunTimeConfig->Monitor)/sizeof(RunTimeConfig->Monitor[0]) && (argv[i][0] != '-'); i++, alarmcnt++){
-                alarmlist[alarmcnt] = (int)strtol(argv[i], NULL, 0);
+                alarmlist[alarmcnt] = (unsigned char)strtol(argv[i], NULL, 0);
             }
             i--;
         }
@@ -279,28 +284,15 @@ int main(int argc, char **argv)
             printf("DEBUGMODE: %d\n", RunTimeConfig->DebugMode);
             printf("ALARMLIST:");
             i = 0;
-            while(RunTimeConfig->Monitor[i] & 0x8000 /*todo define*/ &&
-                  RunTimeConfig->Monitor[i] != 0xFFFF) {
-                //~ if(i>0) {
-                    //~ printf(",");
-                    //~ if(i%8 ==0) {
-                        //~ printf("\n          ");
-                    //~ }
-                //~ }
-                printf(" %d",RunTimeConfig->Monitor[i]& ~0x8000/*todo*/);
+            while(RunTimeConfig->Monitor[i] < END_ALARM_LIST) {
+                printf(" %d",RunTimeConfig->Monitor[i]);
                 i++;
             }
             printf("\n");
             printf("CHECKLIST:");
-            pos = i;
+            pos = i+1;
             i = 0;
-            while(RunTimeConfig->Monitor[pos+i] != 0xFFFF) {
-                //~ if(i>0) {
-                    //~ printf(",");
-                    //~ if(i%8 ==0) {
-                        //~ printf("\n          ");
-                    //~ }
-                //~ }
+            while(RunTimeConfig->Monitor[pos+i] < END_CHECK_LIST) {
                 printf(" %d",RunTimeConfig->Monitor[pos+i]);
                 i++;
             }
@@ -312,11 +304,14 @@ int main(int argc, char **argv)
         RunTimeConfig->ID = id;
         RunTimeConfig->DebugMode = debugmode;
         for(i=0; i<alarmcnt; i++) {
-            RunTimeConfig->Monitor[i] = alarmlist[i] | 0x8000; //todo: define 0x8000 
+            RunTimeConfig->Monitor[i] = alarmlist[i]; 
         }
+        RunTimeConfig->Monitor[i] = END_ALARM_LIST;
         for(i=0; i<checkcnt; i++) {
-            RunTimeConfig->Monitor[alarmcnt+i] = checklist[i] & ~0x8000; //todo: define 0x8000 
+            RunTimeConfig->Monitor[alarmcnt+i+1] = checklist[i]; 
         }
+        RunTimeConfig->Monitor[alarmcnt+i+1] = END_CHECK_LIST;
+
         int len = SIZE[(int)buffer[0]];
         //~ hexdump(buffer, len);
         if((err = usbhidSetReport(dev, buffer, len)) != 0) {  /* add a dummy report ID */

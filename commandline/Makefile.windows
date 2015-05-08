@@ -15,4 +15,4 @@ include Makefile
 USBFLAGS=
 USBLIBS=    -lhid -lsetupapi
 EXE_SUFFIX= .exe
-# CC=				i586-mingw32msvc-gcc
+#CC=				i586-mingw32msvc-gcc

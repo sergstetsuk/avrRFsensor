@@ -24,9 +24,9 @@
 	"hiddata.h"
 	"../firmware/usbconfig.h"
 
-1425631066 z:\home\serg\projects\avrrfsensor\firmware\usbconfig.h
+1431108673 z:\home\serg\projects\avrrfsensor\firmware\usbconfig.h
 
-1426488880 source:z:\home\serg\projects\avrrfsensor\commandline\avrrftool.c
+1431114118 source:z:\home\serg\projects\avrrfsensor\commandline\avrrftool.c
 	<stdio.h>
 	<string.h>
 	<stdlib.h>

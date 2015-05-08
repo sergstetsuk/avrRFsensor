@@ -56,10 +56,10 @@ char SendNextAlarm(PacketStruc* Packet);
 void InitAlarm();
 
 typedef struct __attribute__((packed)){
-    unsigned short ID;
-    unsigned char DebugMode;
-    unsigned char CryptKey[16];
-    unsigned short Monitor[30];
+    uchar ID;
+    uchar DebugMode;
+    uchar CryptKey[16];
+    uchar Monitor[30];
     } RunTimeConfigStruc;
 
 RunTimeConfigStruc RunTimeConfig __attribute__ ((section(".eeprom")));
@@ -296,7 +296,7 @@ int main(void)
     uchar   i;
     minRSSIValue = 255;
     debugmode = eeprom_read_byte(&RunTimeConfig.DebugMode);
-    MyID = eeprom_read_byte((const uint16_t *)&RunTimeConfig.ID);
+    MyID = eeprom_read_byte((const uint8_t *)&RunTimeConfig.ID);
     WorkingMode = MODE_UNDEF;  //now main mode is RX
     wdt_enable(WDTO_250MS);
     /* RESET status: all port bits are inputs without pull-up.
