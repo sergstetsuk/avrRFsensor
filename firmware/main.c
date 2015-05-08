@@ -96,9 +96,9 @@ static uchar    WorkingMode;
 static uchar    operationMode;
 static uchar    options;
 static uchar    debugmode;
-static uchar    State;
+static uchar    State,PrevState;
 static uchar    minRSSIValue;
-static int      Timer1, Timer2;
+static int      Timer1,PrevTimer1, Timer2;
 static unsigned short MyID;
 static unsigned short ForbidID;
 static uint16_t *     CurrentPtr;
@@ -548,22 +548,24 @@ ISR(WDT_vect)
             if(State == ST_RETR) {
                 SetTimer(TM_RETRY);
                 if(!SendNextRetransmit(&TxPacket)) {
-                    //todo restore Timer1 and State
-                    SetTimer(TM_WAIT_CHECK);
-                    State = ST_WAIT;
+                    //todo: restore Timer1 and State -fixed
+                    Timer1 = PrevTimer1;
+                    State = PrevState;
+                    //~ SetTimer(TM_WAIT_CHECK);
+                    //~ State = ST_WAIT;
 
-                    if(options & OP_ALARMTRIGGER) {
-                        InitAlarm();
-                        //~ options &= ~OP_TRYADJACENT;
-                        SetTimer(TM_RETRY);
-                        //todo: HERE MAY BE 1 minute timer
-                        State = ST_ALRM;
-                        if(!SendNextRetransmit(&ErPacket)){
-                            SetTimer(TM_WAIT_CHECK);
-                            State = ST_WAIT;
-                            options &= ~ OP_ALARMTRIGGER;
-                        }
-                    }
+                    //~ if(options & OP_ALARMTRIGGER) {
+                        //~ InitAlarm();
+                        //~ //!~ options &= ~OP_TRYADJACENT;
+                        //~ SetTimer(TM_RETRY);
+                        //~ //todo: HERE MAY BE 1 minute timer
+                        //~ State = ST_ALRM;
+                        //~ if(!SendNextRetransmit(&ErPacket)){
+                            //~ SetTimer(TM_WAIT_CHECK);
+                            //~ State = ST_WAIT;
+                            //~ options &= ~ OP_ALARMTRIGGER;
+                        //~ }
+                    //~ }
                 }
             }
         }
@@ -620,8 +622,10 @@ ISR(WDT_vect)
             } else
             if(RxPacket.Cmd == CM_ALRM) {
                 if(State != ST_RETR) {
+                    //todo: save Timer1 and State - fixed
+                    PrevState = State;
+                    PrevTimer1 = Timer1;
                     State = ST_RETR;
-                    //todo: save Timer1 and State
                     SetTimer(TM_RETRY);
                     ForbidID = RxPacket.SrcID;
                     TxPacket.SrcID = RxPacket.DstID;
@@ -635,19 +639,21 @@ ISR(WDT_vect)
                     InitAlarm();
                     //~ options &= ~OP_TRYADJACENT;
                     if(!SendNextRetransmit(&TxPacket)) {
-                        //todo: save Timer1 and State
-                        State = ST_WAIT;
-                        SetTimer(TM_WAIT_CHECK);
-                        if(options & OP_ALARMTRIGGER) {
-                            InitAlarm();
-                            SetTimer(TM_RETRY);
-                            State = ST_ALRM;
-                            if(!SendNextAlarm(&ErPacket)){
-                                SetTimer(TM_WAIT_CHECK);
-                                State = ST_WAIT;
-                                options &= ~ OP_ALARMTRIGGER;
-                            }
-                        }
+                        //todo: restore Timer1 and State - fixed
+                        Timer1 = PrevTimer1;
+                        State = PrevState;
+                        //~ State = ST_WAIT;
+                        //~ SetTimer(TM_WAIT_CHECK);
+                        //~ if(options & OP_ALARMTRIGGER) {
+                            //~ InitAlarm();
+                            //~ SetTimer(TM_RETRY);
+                            //~ State = ST_ALRM;
+                            //~ if(!SendNextAlarm(&ErPacket)){
+                                //~ SetTimer(TM_WAIT_CHECK);
+                                //~ State = ST_WAIT;
+                                //~ options &= ~ OP_ALARMTRIGGER;
+                            //~ }
+                        //~ }
                     }
                 }
             } else
@@ -657,8 +663,10 @@ ISR(WDT_vect)
                     SetTimer(TM_WAIT_CHECK);
                     State = ST_WAIT;
                 } else {
+                    //todo: save Timer1 and State - fixed
+                    PrevState = State;
+                    PrevTimer1 = Timer1;
                     State = ST_RETR;
-                    //todo: save Timer1 and State
                     SetTimer(TM_RETRY);
                     ForbidID = RxPacket.SrcID;
                     TxPacket.SrcID = RxPacket.DstID;
@@ -672,19 +680,21 @@ ISR(WDT_vect)
                     InitAlarm();
                     options |= OP_TRYADJACENT;
                     if(!SendNextRetransmit(&TxPacket)) {
-                        //restore Timer1 and State
-                        State = ST_WAIT;
-                        SetTimer(TM_WAIT_CHECK);
-                        if(options & OP_ALARMTRIGGER) {
-                            InitAlarm();
-                            SetTimer(TM_RETRY);
-                            State = ST_ALRM;
-                            if(!SendNextAlarm(&ErPacket)){
-                                SetTimer(TM_WAIT_CHECK);
-                                State = ST_WAIT;
-                                options &= ~ OP_ALARMTRIGGER;
-                            }
-                        }
+                        //restore Timer1 and State - fixed
+                        Timer1 = PrevTimer1;
+                        State = PrevState;
+                        //~ State = ST_WAIT;
+                        //~ SetTimer(TM_WAIT_CHECK);
+                        //~ if(options & OP_ALARMTRIGGER) {
+                            //~ InitAlarm();
+                            //~ SetTimer(TM_RETRY);
+                            //~ State = ST_ALRM;
+                            //~ if(!SendNextAlarm(&ErPacket)){
+                                //~ SetTimer(TM_WAIT_CHECK);
+                                //~ State = ST_WAIT;
+                                //~ options &= ~ OP_ALARMTRIGGER;
+                            //~ }
+                        //~ }
                     }
                 }
             }
