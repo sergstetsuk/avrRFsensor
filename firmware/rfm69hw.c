@@ -144,6 +144,16 @@ void InitRFM69HWtx()
                              |AUTOMODES_INTERMEDIATE_TRANSMITTER); //enter fifolevel,exit packetsent, interstate tx
 }
 
+void CopyPacket (PacketStruc* dst,PacketStruc* src) {
+    InitRFM69HWtx();
+    int i;
+    unsigned char* dptr = (unsigned char*) dst;
+    unsigned char* sptr = (unsigned char*) src;
+    for(i = 0; i < sizeof(PacketStruc); i++){
+        *dptr++ = *sptr++;
+    }
+}
+
 void SendPacket (PacketStruc * buffer) {
     InitRFM69HWtx();
     int i;

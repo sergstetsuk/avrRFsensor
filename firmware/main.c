@@ -99,10 +99,10 @@ static uchar    debugmode;
 static uchar    State,PrevState;
 static uchar    minRSSIValue;
 static int      Timer1,PrevTimer1, Timer2;
-static unsigned short MyID;
-static unsigned short ForbidID;
-static uint16_t *     CurrentPtr;
+static uchar    MyID;
+static uchar    ForbidID;
 static uchar    CheckCounter;
+static uchar*   CurrentPtr;
 static PacketStruc RxPacket;
 static PacketStruc TxPacket;
 static PacketStruc ErPacket;
@@ -133,6 +133,11 @@ enum INFO_OPTIONS {
     INFO_RESTART,
     INFO_NOLINK,
     INFO_NOANSWER
+};
+
+enum LIST_ENDS {
+    END_ALARM_LIST = 254,
+    END_CHECK_LIST = 255
 };
 
 /* ------------------------------------------------------------------------- */
@@ -291,7 +296,7 @@ int main(void)
     uchar   i;
     minRSSIValue = 255;
     debugmode = eeprom_read_byte(&RunTimeConfig.DebugMode);
-    MyID = eeprom_read_word((const uint16_t *)&RunTimeConfig.ID);
+    MyID = eeprom_read_byte((const uint16_t *)&RunTimeConfig.ID);
     WorkingMode = MODE_UNDEF;  //now main mode is RX
     wdt_enable(WDTO_250MS);
     /* RESET status: all port bits are inputs without pull-up.
@@ -300,7 +305,7 @@ int main(void)
      */
     SPI_Init(); //init spi interface
     InitRFM69HW(); //for rfm cs
-    InitRFM69HWrx(MyID & 0xFF); //default mode is rx between transmissions
+    InitRFM69HWrx(MyID); //default mode is rx between transmissions
 
     usbInit();
     usbDeviceDisconnect();  /* enforce re-enumeration, do this while interrupts are disabled! */
@@ -327,7 +332,7 @@ int main(void)
     options |= OP_ALARMTRIGGER;
     ErPacket.SrcID = MyID;
     ErPacket.Cmd = CM_ALRM;
-    ErPacket.ErrID = ErPacket.SrcID;
+    ErPacket.ExtraInfo[0] = ErPacket.SrcID;
     ErPacket.Options = INFO_RESTART;
     ErrTickCounter = TickCounter;
     InitAlarm();
@@ -358,27 +363,27 @@ int main(void)
 
 void InitCheck()
 {
-    CurrentPtr = (uint16_t *) &RunTimeConfig.Monitor[0];
-    while(eeprom_read_word(CurrentPtr) & 0x8000 && eeprom_read_word(CurrentPtr) != 0xFFFF)
+    CurrentPtr = (uchar*) &RunTimeConfig.Monitor[0];
+    while(eeprom_read_byte(CurrentPtr) < END_ALARM_LIST)
         CurrentPtr++;
-    CurrentPtr--;
+    //next byte is expected checklist
 }
 void InitAlarm()
 {
-    CurrentPtr = (uint16_t *) &RunTimeConfig.Monitor;
+    CurrentPtr = (uchar*) &RunTimeConfig.Monitor;
     CurrentPtr--;
 }
 char SendNextCheck()
 {
     CurrentPtr++;
-    int id = eeprom_read_word(CurrentPtr);
-    if( id == 0xFFFF) {
+    uchar id = eeprom_read_byte(CurrentPtr);
+    if( id < END_CHECK_LIST) {
         return 0;
     }
         TxPacket.DstID = id;
         TxPacket.SrcID = MyID;
         TxPacket.Cmd = CM_TEST;
-        TxPacket.ErrID = TxPacket.SrcID;
+        TxPacket.ExtraInfo[0] = TxPacket.SrcID;
         TxPacket.ErrTickCounter = TickCounter;
         TxPacket.Options = 0;
         InitRFM69HWtx();
@@ -390,11 +395,11 @@ char SendNextCheck()
 char SendNextAlarm(PacketStruc* Packet)
 {
     CurrentPtr++;
-    int id = eeprom_read_word(CurrentPtr);
-    if(!(id & 0x8000) || id == 0xFFFF) {
+    uchar id = eeprom_read_byte(CurrentPtr);
+    if(id >= END_ALARM_LIST) {
         return 0;
     }
-        Packet->DstID = id & ~0x8000;
+        Packet->DstID = id;
         Packet->ErrTickCounter = TickCounter - ErrTickCounter;
         InitRFM69HWtx();
         SendPacket(Packet);
@@ -405,31 +410,31 @@ char SendNextAlarm(PacketStruc* Packet)
 //adjacent points are only from alarmlist or ErrID point for CM_EXEC
 char SendNextRetransmit(PacketStruc* Packet)
 {
-    int id;
+    uchar id;
     if(options & OP_TRYADJACENT) {
         options &= ~OP_TRYADJACENT;
         do {
             CurrentPtr++;
-            id = eeprom_read_word(CurrentPtr);
-            if((id & ~0x8000) == TxPacket.ErrID && TxPacket.Cmd == CM_EXEC) {
-                Packet->DstID = id & ~0x8000;
+            id = eeprom_read_byte(CurrentPtr);
+            if(id == TxPacket.ExtraInfo[0] && TxPacket.Cmd == CM_EXEC) {
+                Packet->DstID = id;
                 InitRFM69HWtx();
                 SendPacket(Packet);
                 Timer2 = TM_TRANSMIT/OneTick;
                 InitCheck();
                 return 1;
             }
-        } while(id != 0xFFFF); //scan to end of lists
+        } while(id < END_CHECK_LIST); //scan to end of lists
         InitAlarm();
     }
     do {
         CurrentPtr++;
-        id = eeprom_read_word(CurrentPtr);
-        if(id == 0xFFFF || !(id & 0x8000)) {
-            return 0;
+        id = eeprom_read_byte(CurrentPtr);
+        if(id >= END_ALARM_LIST) {
+            return 0;   //exit at the end of alarmlist
         }
-    } while((id & ~0x8000) == ForbidID); //skip forbid id
-    Packet->DstID = id & ~0x8000;
+    } while(id == ForbidID); //just skip forbid id
+    Packet->DstID = id;
     InitRFM69HWtx();
     SendPacket(Packet);
     Timer2 = TM_TRANSMIT/OneTick;
@@ -463,7 +468,7 @@ ISR(WDT_vect)
     if (((ReadRFM69HW(RegAutoModes) & 0x03) == AUTOMODES_INTERMEDIATE_TRANSMITTER && 
         !(ReadRFM69HW(RegIrqFlags1) & IRQFLAGS1_AUTOMODE)) || Timer2 == 0)
     {
-        InitRFM69HWrx(MyID & 0xFF);
+        InitRFM69HWrx(MyID);
     }
     if (WorkingMode == MODE_RX) {
 //!~ #define LINK_MASK (1<<PIND0) || (1<<PIND1) || (1<<PIND2) || (1<<PIND3) || (1<<PIND4) || (1<<PIND5) || (1<<PIND6) || (1<<PIND7)
@@ -475,7 +480,7 @@ ISR(WDT_vect)
                 options |= OP_ALARMTRIGGER;
                 ErPacket.SrcID = MyID;
                 ErPacket.Cmd = CM_ALRM;
-                ErPacket.ErrID = ErPacket.SrcID;
+                ErPacket.ExtraInfo[0] = ErPacket.SrcID;
                 ErPacket.Options = INFO_NOLINK;
                 ErrTickCounter = TickCounter;
                 //~ ErPacket.MyDeltaCounter = PIND; //debug
@@ -517,10 +522,10 @@ ISR(WDT_vect)
                     //~ options |= OP_ALARMTRIGGER;
                     ErPacket.SrcID = MyID;
                     ErPacket.Cmd = CM_ALRM;
-                    ErPacket.ErrID = TxPacket.SrcID;
+                    ErPacket.ExtraInfo[0] = TxPacket.SrcID;
                     ErPacket.Options = INFO_NOANSWER;
                     ErrTickCounter = TickCounter;
-                    ErPacket.ExtraInfo = eeprom_read_word(CurrentPtr);
+                    ErPacket.ExtraInfo[1] = eeprom_read_byte(CurrentPtr);
                     SetTimer(TM_RETRY);
                     InitAlarm();
                     State = ST_ALRM;
@@ -580,6 +585,7 @@ ISR(WDT_vect)
             //received packet processing procedure after one takt delay
             ReceivePacket(&RxPacket);
     //DEBUG LCD OPERATION ALARM AND LEVEL DISPLAY
+            //if ALARM - just display for portable device
             //~ if(RxPacket.Cmd == CM_ALRM) {
                 LCD_Clear();
                 LCD_TransmitDot((TickCounter>>2)&0x0F,0);
@@ -594,9 +600,6 @@ ISR(WDT_vect)
     //END DEBUG
             if(RxPacket.DstID != MyID) {
                 //Not mine
-                //if ALARM - just display for portable device
-                //~ if(RxPacket.Cmd == CM_ALRM) {
-                //~ }
                 return;
             }
             if(RxPacket.Cmd == CM_TEST) {
@@ -604,7 +607,7 @@ ISR(WDT_vect)
                 RxPacket.Cmd = CM_ANSW;
                 RxPacket.DstID = RxPacket.SrcID;
                 RxPacket.SrcID = MyID;
-                RxPacket.ErrID = RxPacket.SrcID;
+                RxPacket.ExtraInfo[0] = RxPacket.SrcID;
                 RxPacket.ErrTickCounter = TickCounter;
                 RxPacket.Options = 0;
                 InitRFM69HWtx();
@@ -612,7 +615,7 @@ ISR(WDT_vect)
                 Timer2 = TM_TRANSMIT/OneTick;
             } else
             if(RxPacket.Cmd == CM_ANSW) {
-                if(State == ST_CHCK && RxPacket.SrcID == eeprom_read_word(CurrentPtr)) {
+                if(State == ST_CHCK && RxPacket.SrcID == eeprom_read_byte(CurrentPtr)) {
                     if(!SendNextCheck()){ //the end
                         SetTimer(TM_WAIT_CHECK); //waitcorrection
                         Timer1 += 1000/OneTick*(MyID%16);
@@ -622,79 +625,41 @@ ISR(WDT_vect)
             } else
             if(RxPacket.Cmd == CM_ALRM) {
                 if(State != ST_RETR) {
-                    //todo: save Timer1 and State - fixed
-                    PrevState = State;
+                    PrevState = State; //save Timer1 and State
                     PrevTimer1 = Timer1;
                     State = ST_RETR;
                     SetTimer(TM_RETRY);
                     ForbidID = RxPacket.SrcID;
+                    CopyPacket(&TxPacket,&RxPacket);
                     TxPacket.SrcID = RxPacket.DstID;
-                    TxPacket.Cmd = RxPacket.Cmd;
-                    TxPacket.Options = RxPacket.Options;
-                    TxPacket.ErrID = RxPacket.ErrID;
-                    TxPacket.ErrTickCounter = RxPacket.ErrTickCounter;
-                    //todo: not sendto the SrcID if it in alarmlist
                     //not todo: if ErrID in checklist. Send only direct to DstID
                     //because in this case errors won't get to multidestination
                     InitAlarm();
-                    //~ options &= ~OP_TRYADJACENT;
                     if(!SendNextRetransmit(&TxPacket)) {
-                        //todo: restore Timer1 and State - fixed
-                        Timer1 = PrevTimer1;
+                        Timer1 = PrevTimer1; //restore Timer1 and State
                         State = PrevState;
-                        //~ State = ST_WAIT;
-                        //~ SetTimer(TM_WAIT_CHECK);
-                        //~ if(options & OP_ALARMTRIGGER) {
-                            //~ InitAlarm();
-                            //~ SetTimer(TM_RETRY);
-                            //~ State = ST_ALRM;
-                            //~ if(!SendNextAlarm(&ErPacket)){
-                                //~ SetTimer(TM_WAIT_CHECK);
-                                //~ State = ST_WAIT;
-                                //~ options &= ~ OP_ALARMTRIGGER;
-                            //~ }
-                        //~ }
                     }
                 }
             } else
             if(RxPacket.Cmd == CM_EXEC) {
-                if(RxPacket.ErrID == MyID) {
+                if(RxPacket.ExtraInfo[0] == MyID) {
                     options &= ~ OP_ALARMTRIGGER;
                     SetTimer(TM_WAIT_CHECK);
                     State = ST_WAIT;
                 } else {
-                    //todo: save Timer1 and State - fixed
-                    PrevState = State;
+                    PrevState = State; //save Timer1 and State
                     PrevTimer1 = Timer1;
                     State = ST_RETR;
                     SetTimer(TM_RETRY);
                     ForbidID = RxPacket.SrcID;
+                    CopyPacket(&TxPacket,&RxPacket);
                     TxPacket.SrcID = RxPacket.DstID;
-                    TxPacket.Cmd = RxPacket.Cmd;
-                    TxPacket.Options = RxPacket.Options;
-                    TxPacket.ErrID = RxPacket.ErrID;
-                    TxPacket.ErrTickCounter = RxPacket.ErrTickCounter;
-                    //todo: not sendto the SrcID if it in alarmlist
-                    //todo: if ErrID in checklist. Send only direct to DstID
 
                     InitAlarm();
-                    options |= OP_TRYADJACENT;
+                    options |= OP_TRYADJACENT;  //trying to send only to proper destination
                     if(!SendNextRetransmit(&TxPacket)) {
-                        //restore Timer1 and State - fixed
-                        Timer1 = PrevTimer1;
+                        Timer1 = PrevTimer1; //restore Timer1 and State
                         State = PrevState;
-                        //~ State = ST_WAIT;
-                        //~ SetTimer(TM_WAIT_CHECK);
-                        //~ if(options & OP_ALARMTRIGGER) {
-                            //~ InitAlarm();
-                            //~ SetTimer(TM_RETRY);
-                            //~ State = ST_ALRM;
-                            //~ if(!SendNextAlarm(&ErPacket)){
-                                //~ SetTimer(TM_WAIT_CHECK);
-                                //~ State = ST_WAIT;
-                                //~ options &= ~ OP_ALARMTRIGGER;
-                            //~ }
-                        //~ }
                     }
                 }
             }

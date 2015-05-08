@@ -679,16 +679,15 @@
 //***********************************
 //***********************************
 typedef struct {
-    unsigned short DstID;
-    unsigned short SrcID;
+    unsigned char DstID;
+    unsigned char SrcID;
     unsigned char Cmd;
     unsigned char Options;
-    unsigned short ErrID;
     unsigned long ErrTickCounter;
-    unsigned short ExtraInfo;
-    unsigned short DebugInfo;
+    unsigned char ExtraInfo[8];
     } PacketStruc;
-
+//ErrID = ExtraInfo[0] => GlobalDestination
+//NoAnswerID = ExtraInfo[1] => With whom there is no connection
 //***********************************
 
 unsigned char ReadRFM69HW(unsigned char);
@@ -699,6 +698,7 @@ void InitRFM69HWrx(unsigned char);
 void InitRFM69HWrxusb();
 void InitRFM69HWtx();
 void InitRFM69HW();
+void CopyPacket (PacketStruc *,PacketStruc *);
 void SendPacket (PacketStruc *);
 void ReceivePacket (PacketStruc *);
 #endif /*RFM69HW_H*/
