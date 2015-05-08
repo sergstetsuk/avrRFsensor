@@ -289,6 +289,7 @@ void hadAddressAssigned()
 int main(void)
 {
     uchar   i;
+    minRSSIValue = 255;
     debugmode = eeprom_read_byte(&RunTimeConfig.DebugMode);
     MyID = eeprom_read_word((const uint16_t *)&RunTimeConfig.ID);
     WorkingMode = MODE_UNDEF;  //now main mode is RX
@@ -487,24 +488,28 @@ ISR(WDT_vect)
             options &= ~OP_TRIGGERONCE;
         }
 
-        if(Timer1 == 0){
+        if(Timer1 <= 0){
             //timeout procedure
             if(State == ST_WAIT) {
                 InitCheck();
-                SetTimer(TM_RETRY);
+                SetTimer(TM_RETRY); //retrycheck
+                Timer1 += 1000/OneTick*(MyID%4);
                 State = ST_CHCK;
                 CheckCounter = 0;
                 if(!SendNextCheck()){ //no check queue
-                    SetTimer(TM_WAIT_CHECK);
+                    SetTimer(TM_WAIT_CHECK); //waitcorrection
+                    Timer1 += 1000/OneTick*(MyID%16);
                     State = ST_WAIT;
                 }
             } else
             if(State == ST_CHCK) {
-                SetTimer(TM_RETRY);
+                SetTimer(TM_RETRY); ///retrycheck
+                Timer1 +=1000/OneTick*(MyID%4);
                 if (CheckCounter++ < MAX_CHECK_RETRY) {
                     CurrentPtr--; //Send the same request
                     if(!SendNextCheck()){ //the end
-                        SetTimer(TM_WAIT_CHECK);
+                        SetTimer(TM_WAIT_CHECK); //waitcorrection
+                        Timer1 += 1000/OneTick*(MyID%16);
                         State = ST_WAIT;
                     }
                 } else {
@@ -543,6 +548,7 @@ ISR(WDT_vect)
             if(State == ST_RETR) {
                 SetTimer(TM_RETRY);
                 if(!SendNextRetransmit(&TxPacket)) {
+                    //todo restore Timer1 and State
                     SetTimer(TM_WAIT_CHECK);
                     State = ST_WAIT;
 
@@ -550,6 +556,7 @@ ISR(WDT_vect)
                         InitAlarm();
                         //~ options &= ~OP_TRYADJACENT;
                         SetTimer(TM_RETRY);
+                        //todo: HERE MAY BE 1 minute timer
                         State = ST_ALRM;
                         if(!SendNextRetransmit(&ErPacket)){
                             SetTimer(TM_WAIT_CHECK);
@@ -567,19 +574,20 @@ ISR(WDT_vect)
                     options |= OP_RECEIVEDELAY;
                     return;
                 }
-                    options &= ~OP_RECEIVEDELAY;
-                //received packet processing procedure after one takt delay
+            options &= ~OP_RECEIVEDELAY;
+            //received packet processing procedure after one takt delay
             ReceivePacket(&RxPacket);
     //DEBUG LCD OPERATION ALARM AND LEVEL DISPLAY
             //~ if(RxPacket.Cmd == CM_ALRM) {
-        //~ LCD_Clear();
-        //~ LCD_TransmitDot((TickCounter>>2)&0x0F,0);
-        //~ LCD_TransmitDot(minRSSIValue&0x0F,LCD_HASH);
-        //~ LCD_TransmitDot((minRSSIValue>>4)&0x0F,LCD_HASH);
-        //~ LCD_TransmitDot(0,LCD_RAW);
-        //~ LCD_TransmitDot(RxPacket.SrcID&0x0F,0);
-        //~ LCD_TransmitDot((RxPacket.SrcID>>4)&0x0F,0);
-        //~ minRSSIValue = 255;
+                LCD_Clear();
+                LCD_TransmitDot((TickCounter>>2)&0x0F,0);
+                LCD_TransmitDot(minRSSIValue&0x0F,LCD_HASH);
+                LCD_TransmitDot((minRSSIValue>>4)&0x0F,LCD_HASH);
+                LCD_TransmitDot(0,LCD_RAW);
+                LCD_TransmitDot(RxPacket.Cmd&0x0F,0);
+                LCD_TransmitDot(RxPacket.SrcID&0x0F,LCD_DOT);
+                LCD_TransmitDot((RxPacket.SrcID>>4)&0x0F,0);
+                minRSSIValue = 255;
             //~ }
     //END DEBUG
             if(RxPacket.DstID != MyID) {
@@ -604,7 +612,8 @@ ISR(WDT_vect)
             if(RxPacket.Cmd == CM_ANSW) {
                 if(State == ST_CHCK && RxPacket.SrcID == eeprom_read_word(CurrentPtr)) {
                     if(!SendNextCheck()){ //the end
-                        SetTimer(TM_WAIT_CHECK);
+                        SetTimer(TM_WAIT_CHECK); //waitcorrection
+                        Timer1 += 1000/OneTick*(MyID%16);
                         State = ST_WAIT;
                     }
                 }
@@ -612,6 +621,7 @@ ISR(WDT_vect)
             if(RxPacket.Cmd == CM_ALRM) {
                 if(State != ST_RETR) {
                     State = ST_RETR;
+                    //todo: save Timer1 and State
                     SetTimer(TM_RETRY);
                     ForbidID = RxPacket.SrcID;
                     TxPacket.SrcID = RxPacket.DstID;
@@ -625,6 +635,7 @@ ISR(WDT_vect)
                     InitAlarm();
                     //~ options &= ~OP_TRYADJACENT;
                     if(!SendNextRetransmit(&TxPacket)) {
+                        //todo: save Timer1 and State
                         State = ST_WAIT;
                         SetTimer(TM_WAIT_CHECK);
                         if(options & OP_ALARMTRIGGER) {
@@ -647,6 +658,7 @@ ISR(WDT_vect)
                     State = ST_WAIT;
                 } else {
                     State = ST_RETR;
+                    //todo: save Timer1 and State
                     SetTimer(TM_RETRY);
                     ForbidID = RxPacket.SrcID;
                     TxPacket.SrcID = RxPacket.DstID;
@@ -660,6 +672,7 @@ ISR(WDT_vect)
                     InitAlarm();
                     options |= OP_TRYADJACENT;
                     if(!SendNextRetransmit(&TxPacket)) {
+                        //restore Timer1 and State
                         State = ST_WAIT;
                         SetTimer(TM_WAIT_CHECK);
                         if(options & OP_ALARMTRIGGER) {

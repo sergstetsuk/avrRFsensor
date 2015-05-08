@@ -82,7 +82,7 @@ for(;;){
             $errtick = hex $12.$11.$10.$9;
             $extrainfo = hex $14.$13;
             $debuginfo = hex $16.$15;
-            $noansid = $extrainfo;
+            $noanswerid = $extrainfo;
 
             if($cmd == 0x02) {   #command not CM_ANSW
                 if($LOGLEVEL > 2){
@@ -166,7 +166,11 @@ sub PlayAlarm(){
     #~ `play -q -n -c1 synth sin %-12 sin %-9 sin %-5 sin %-2 fade h 0.1 0.25 0.1`;
     #~ `play -q -n -c1 synth 0.5 sine 1600-100 synth 0.6 sine fmod 200-1400`
     #~ `play -q "|sox -n -p synth 2 sin 300-2000" "|sox -n -p synth  2 sin 2000-300"`;
-    `play -q audio/siren.ogg`;
-    `play -q $filename`;
+    if($options == 3){
+        `play -q audio/alert.ogg`;
+    } else {
+        `play -q audio/siren.ogg`;
+        `play -q $filename`;
+    }
     $Timer1 = $Now+10;
 }
