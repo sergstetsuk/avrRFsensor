@@ -595,8 +595,8 @@ ISR(WDT_vect)
             if(RxPacket.DstID != MyID) {
                 //Not mine
                 //if ALARM - just display for portable device
-                if(RxPacket.Cmd == CM_ALRM) {
-                }
+                //~ if(RxPacket.Cmd == CM_ALRM) {
+                //~ }
                 return;
             }
             if(RxPacket.Cmd == CM_TEST) {
