@@ -145,7 +145,6 @@ void InitRFM69HWtx()
 }
 
 void CopyPacket (PacketStruc* dst,PacketStruc* src) {
-    InitRFM69HWtx();
     int i;
     unsigned char* dptr = (unsigned char*) dst;
     unsigned char* sptr = (unsigned char*) src;

@@ -370,14 +370,14 @@ void InitCheck()
 }
 void InitAlarm()
 {
-    CurrentPtr = (uchar*) &RunTimeConfig.Monitor;
+    CurrentPtr = (uchar*) &RunTimeConfig.Monitor[0];
     CurrentPtr--;
 }
 char SendNextCheck()
 {
     CurrentPtr++;
     uchar id = eeprom_read_byte(CurrentPtr);
-    if( id < END_CHECK_LIST) {
+    if( id >= END_CHECK_LIST) {
         return 0;
     }
         TxPacket.DstID = id;
@@ -592,9 +592,11 @@ ISR(WDT_vect)
                 LCD_TransmitDot(minRSSIValue&0x0F,LCD_HASH);
                 LCD_TransmitDot((minRSSIValue>>4)&0x0F,LCD_HASH);
                 LCD_TransmitDot(0,LCD_RAW);
-                LCD_TransmitDot(RxPacket.Cmd&0x0F,0);
+                //~ LCD_TransmitDot(RxPacket.Cmd&0x0F,0);
                 LCD_TransmitDot(RxPacket.SrcID&0x0F,LCD_DOT);
                 LCD_TransmitDot((RxPacket.SrcID>>4)&0x0F,0);
+                LCD_TransmitDot(RxPacket.DstID&0x0F,LCD_DOT);
+                LCD_TransmitDot((RxPacket.DstID>>4)&0x0F,0);
                 minRSSIValue = 255;
             //~ }
     //END DEBUG
