@@ -103,6 +103,7 @@ static void usage(char *myName)
     fprintf(stderr, "        writeconfig - write configuration\n");
     fprintf(stderr, "        readblock - read data block (debug)\n");
     fprintf(stderr, "        writeblock - write data block (debug)\n");
+    fprintf(stderr, "        tracepacket - trace received packets (debug)\n");
     fprintf(stderr, "available options:\n");
     fprintf(stderr, "  -b <hexstring,...> - for tx packet and debug puropses.\n");
     fprintf(stderr, "  --buffer <hexstring,...> - for tx packet and debug puropses.\n");
@@ -130,7 +131,8 @@ enum OPERATIONS {
     OP_READCONFIG,
     OP_WRITEBLOCK,
     OP_WRITEPACKET,
-    OP_WRITECONFIG
+    OP_WRITECONFIG,
+    OP_TRACEPACKET
     };
 enum MODES {
     MODE_UNDEF,
@@ -144,6 +146,7 @@ int main(int argc, char **argv)
 {
     usbDevice_t *dev;
     char    buffer[513];    /* room for dummy report ID */
+    char prevbuffer[513];
     unsigned char     checklist[30];
     unsigned char     alarmlist[30];
     int     err, checkcnt=0, alarmcnt=0;
@@ -185,6 +188,9 @@ int main(int argc, char **argv)
             } else
             if(!strcasecmp(argv[i+1], "writeconfig") ){
                 operation = OP_WRITECONFIG;
+            } else
+            if(!strcasecmp(argv[i+1], "tracepacket") ){
+                operation = OP_TRACEPACKET;
             } else {
                 usage(argv[0]);
                 exit(1);
@@ -317,6 +323,26 @@ int main(int argc, char **argv)
         if((err = usbhidSetReport(dev, buffer, len)) != 0) {  /* add a dummy report ID */
             fprintf(stderr, "error reading data: %s\n", usbErrorMessage(err));
         }       
+    } else
+    if(operation == OP_TRACEPACKET){
+        for(;;){
+            int isequal = 1;
+            buffer[0] = 0x01;
+            int len = SIZE[(int)buffer[0]];
+            if((err = usbhidGetReport(dev, buffer[0], buffer, &len)) != 0){
+                fprintf(stderr, "error reading data: %s\n", usbErrorMessage(err));
+            }else{
+                for (i = 0; i < len; i++){
+                    if (buffer[i] != prevbuffer[i]){
+                        isequal = 0;
+                        prevbuffer[i] = buffer[i];
+                    }
+                }
+                if(!isequal) {
+                    hexdump(buffer + 1, len-1);
+                }
+            }       
+        }
     } else {
         usage(argv[0]);
         exit(1);
