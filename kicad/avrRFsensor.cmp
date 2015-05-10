@@ -1,4 +1,4 @@
-Cmp-Mod V01 Created by CvPcb (22-Jun-2014 BZR 4027)-stable date = сб, 07-лют-2015 09:57:09 +0200
+Cmp-Mod V01 Created by CvPcb (22-Jun-2014 BZR 4027)-stable date = нд, 10-тра-2015 15:27:42 +0300
 
 BeginCmp
 TimeStamp = /4F549CD9;
@@ -36,17 +36,10 @@ IdModule  = SOD80;
 EndCmp
 
 BeginCmp
-TimeStamp = /54D5C585;
-Reference = D3;
-ValeurCmp = DIODE;
-IdModule  = SOD80;
-EndCmp
-
-BeginCmp
-TimeStamp = /54D5C594;
-Reference = D4;
-ValeurCmp = DIODE;
-IdModule  = SOD80;
+TimeStamp = /54BA884D;
+Reference = LINK1;
+ValeurCmp = CONN_1;
+IdModule  = 1PIN_SMD_1mm;
 EndCmp
 
 BeginCmp
@@ -73,20 +66,6 @@ EndCmp
 BeginCmp
 TimeStamp = /54BA86BD;
 Reference = P4;
-ValeurCmp = CONN_1;
-IdModule  = 1PIN_SMD_1mm;
-EndCmp
-
-BeginCmp
-TimeStamp = /54BA884D;
-Reference = P5;
-ValeurCmp = CONN_1;
-IdModule  = 1PIN_SMD_1mm;
-EndCmp
-
-BeginCmp
-TimeStamp = /54BA88D5;
-Reference = P6;
 ValeurCmp = CONN_1;
 IdModule  = 1PIN_SMD_1mm;
 EndCmp
@@ -127,6 +106,13 @@ IdModule  = SM0805;
 EndCmp
 
 BeginCmp
+TimeStamp = /554F1B91;
+Reference = R5;
+ValeurCmp = 1..3 M;
+IdModule  = SM0805;
+EndCmp
+
+BeginCmp
 TimeStamp = /54BA358D;
 Reference = R6;
 ValeurCmp = 1k;
@@ -155,6 +141,20 @@ IdModule  = SM0805;
 EndCmp
 
 BeginCmp
+TimeStamp = /554F1BC2;
+Reference = R10;
+ValeurCmp = 100k;
+IdModule  = SM0805;
+EndCmp
+
+BeginCmp
+TimeStamp = /554F1BBC;
+Reference = R11;
+ValeurCmp = 100k;
+IdModule  = SM0805;
+EndCmp
+
+BeginCmp
 TimeStamp = /54B7A49D;
 Reference = U1;
 ValeurCmp = ATMEGA168PA-A;
@@ -179,7 +179,7 @@ BeginCmp
 TimeStamp = /4F549CBC;
 Reference = X1;
 ValeurCmp = 18MHz HC49USSMD;
-IdModule  = Q_49U3HMS;
+IdModule  = XT324;
 EndCmp
 
 EndListe

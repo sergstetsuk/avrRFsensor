@@ -1,5 +1,5 @@
-update=сб, 17-січ-2015 18:46:13 +0200
-last_client=kicad
+update=нд, 10-тра-2015 15:28:32 +0300
+last_client=pcbnew
 [eeschema]
 version=1
 LibDir=
@@ -40,6 +40,8 @@ LibName28=atmel
 LibName29=contrib
 LibName30=valves
 LibName31=rfm69
+[general]
+version=1
 [cvpcb]
 version=1
 NetIExt=net
@@ -51,8 +53,8 @@ LastNetListRead=avrRFsensor.net
 UseCmpFile=1
 PadDrill=0.000000000000
 PadDrillOvalY=0.000000000000
-PadSizeH=1.000000000000
-PadSizeV=1.000000000000
+PadSizeH=1.300000000000
+PadSizeV=1.200000000000
 PcbTextSizeV=2.032000000000
 PcbTextSizeH=1.524000000000
 PcbTextThickness=0.304800000000
@@ -79,5 +81,4 @@ LibName10=dip_sockets
 LibName11=RFM69
 LibName12=SOD80
 LibName13=pin_1_smd_1mm
-[general]
-version=1
+LibName14=XT324

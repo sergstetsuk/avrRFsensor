@@ -37,7 +37,7 @@ $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
 Title ""
-Date "10 feb 2015"
+Date "10 may 2015"
 Rev ""
 Comp ""
 Comment1 ""
@@ -554,33 +554,87 @@ Wire Wire Line
 Wire Wire Line
 	5300 4300 6300 4300
 $Comp
-L CONN_1 P5
+L CONN_1 LINK1
 U 1 1 54BA884D
-P 6450 4500
-F 0 "P5" H 6530 4500 40  0000 L CNN
-F 1 "CONN_1" H 6450 4555 30  0001 C CNN
-F 2 "" H 6450 4500 60  0000 C CNN
-F 3 "" H 6450 4500 60  0000 C CNN
-	1    6450 4500
+P 9750 3400
+F 0 "LINK1" H 9830 3400 40  0000 L CNN
+F 1 "CONN_1" H 9750 3455 30  0001 C CNN
+F 2 "" H 9750 3400 60  0000 C CNN
+F 3 "" H 9750 3400 60  0000 C CNN
+	1    9750 3400
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	6300 4500 5300 4500
-$Comp
-L CONN_1 P6
-U 1 1 54BA88D5
-P 6450 4600
-F 0 "P6" H 6530 4600 40  0000 L CNN
-F 1 "CONN_1" H 6450 4655 30  0001 C CNN
-F 2 "" H 6450 4600 60  0000 C CNN
-F 3 "" H 6450 4600 60  0000 C CNN
-	1    6450 4600
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	6300 4600 5300 4600
 Text Label 1500 2150 0    60   ~ 0
 aaa
 Text Notes 650  3200 0    60   ~ 0
 USB must give less 3.8v with two diodes
+Text GLabel 5500 4500 2    60   Input ~ 0
+AIN0
+Text GLabel 5500 4600 2    60   Input ~ 0
+AIN1
+Wire Wire Line
+	5300 4500 5500 4500
+Wire Wire Line
+	5300 4600 5500 4600
+Text GLabel 9500 3250 1    60   Input ~ 0
+AIN0
+Text GLabel 8700 3700 0    60   Input ~ 0
+AIN1
+$Comp
+L R R5
+U 1 1 554F1B91
+P 9150 3400
+F 0 "R5" V 9050 3400 50  0000 C CNN
+F 1 "1..3 M" V 9150 3400 50  0000 C CNN
+F 2 "" H 9150 3400 60  0001 C CNN
+F 3 "" H 9150 3400 60  0001 C CNN
+	1    9150 3400
+	0    1    1    0   
+$EndComp
+Text GLabel 10200 3950 2    60   Input ~ 0
+GND
+Text GLabel 8700 3400 0    60   Input ~ 0
+VCC
+Text GLabel 8700 3950 0    60   Input ~ 0
+VCC
+$Comp
+L R R11
+U 1 1 554F1BBC
+P 9850 3950
+F 0 "R11" V 9750 3950 50  0000 C CNN
+F 1 "100k" V 9850 3950 50  0000 C CNN
+F 2 "" H 9850 3950 60  0001 C CNN
+F 3 "" H 9850 3950 60  0001 C CNN
+	1    9850 3950
+	0    1    1    0   
+$EndComp
+$Comp
+L R R10
+U 1 1 554F1BC2
+P 9150 3950
+F 0 "R10" V 9050 3950 50  0000 C CNN
+F 1 "100k" V 9150 3950 50  0000 C CNN
+F 2 "" H 9150 3950 60  0001 C CNN
+F 3 "" H 9150 3950 60  0001 C CNN
+	1    9150 3950
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	9600 3400 9400 3400
+Wire Wire Line
+	9500 3400 9500 3250
+Connection ~ 9500 3400
+Wire Wire Line
+	8900 3400 8700 3400
+Wire Wire Line
+	10200 3950 10100 3950
+Wire Wire Line
+	9600 3950 9400 3950
+Wire Wire Line
+	8900 3950 8700 3950
+Wire Wire Line
+	8700 3700 9500 3700
+Wire Wire Line
+	9500 3700 9500 3950
+Connection ~ 9500 3950
 $EndSCHEMATC
