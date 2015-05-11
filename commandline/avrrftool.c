@@ -21,10 +21,7 @@ typedef struct __attribute__((packed)){
     unsigned char Monitor[30];
     } RunTimeConfigStruc;
 /* ------------------------------------------------------------------------- */
-enum LIST_ENDS {
-    END_ALARM_LIST = 0xfe,
-    END_CHECK_LIST = 0xff
-};
+const unsigned char    END_LIST = 0xff;
 
 static char *usbErrorMessage(int errCode)
 {
@@ -290,7 +287,7 @@ int main(int argc, char **argv)
             printf("DEBUGMODE: %d\n", RunTimeConfig->DebugMode);
             printf("ALARMLIST:");
             i = 0;
-            while(RunTimeConfig->Monitor[i] < END_ALARM_LIST) {
+            while(RunTimeConfig->Monitor[i] != END_LIST) {
                 printf(" %d",RunTimeConfig->Monitor[i]);
                 i++;
             }
@@ -298,7 +295,7 @@ int main(int argc, char **argv)
             printf("CHECKLIST:");
             pos = i+1;
             i = 0;
-            while(RunTimeConfig->Monitor[pos+i] < END_CHECK_LIST) {
+            while(RunTimeConfig->Monitor[pos+i] != END_LIST) {
                 printf(" %d",RunTimeConfig->Monitor[pos+i]);
                 i++;
             }
@@ -312,11 +309,11 @@ int main(int argc, char **argv)
         for(i=0; i<alarmcnt; i++) {
             RunTimeConfig->Monitor[i] = alarmlist[i]; 
         }
-        RunTimeConfig->Monitor[i] = END_ALARM_LIST;
+        RunTimeConfig->Monitor[i] = END_LIST;
         for(i=0; i<checkcnt; i++) {
             RunTimeConfig->Monitor[alarmcnt+i+1] = checklist[i]; 
         }
-        RunTimeConfig->Monitor[alarmcnt+i+1] = END_CHECK_LIST;
+        RunTimeConfig->Monitor[alarmcnt+i+1] = END_LIST;
 
         int len = SIZE[(int)buffer[0]];
         //~ hexdump(buffer, len);
@@ -332,7 +329,7 @@ int main(int argc, char **argv)
             if((err = usbhidGetReport(dev, buffer[0], buffer, &len)) != 0){
                 fprintf(stderr, "error reading data: %s\n", usbErrorMessage(err));
             }else{
-                for (i = 0; i < len; i++){
+                for (i = 1; i < len; i++){
                     if (buffer[i] != prevbuffer[i]){
                         isequal = 0;
                         prevbuffer[i] = buffer[i];

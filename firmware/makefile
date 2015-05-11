@@ -14,7 +14,7 @@ F_CPU   = 18000000
 #~ FUSE_L  = 0xE2
 #~ FUSE_H  = 0xDE
 FUSE_L  = 0xF7
-FUSE_H  = 0xD5
+FUSE_H  = 0xD7
 LOCK = 0x03
 AVRDUDE = avrdude -c usbasp -p $(DEVICE) # edit this line for your programmer
 
@@ -51,14 +51,14 @@ OBJECTS = $(SOURCES:.c=.o) usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o
 #
 ############################## ATMega48/88/168 ##############################
 # ATMega*8 FUSE_L (Fuse low byte):
-# 0xdf = 1 1 0 1   1 1 1 1
+# 0xdf = 1 1 1 1   0 1 1 1
 #        ^ ^ \ /   \--+--/
 #        | |  |       +------- CKSEL 3..0 (external >8M crystal)
 #        | |  +--------------- SUT 1..0 (crystal osc, BOD enabled)
 #        | +------------------ CKOUT (if 0: Clock output enabled)
 #        +-------------------- CKDIV8 (if 0: divide by 8)
 # ATMega*8 FUSE_H (Fuse high byte):
-# 0xde = 1 1 0 1   0 1 1 0
+# 0xde = 1 1 0 1   0 1 1 1
 #        ^ ^ ^ ^   ^ \-+-/
 #        | | | |   |   +------ BODLEVEL 0..2 (111 = disabled)
 #        | | | |   + --------- EESAVE (preserve EEPROM over chip erase)
@@ -69,10 +69,10 @@ OBJECTS = $(SOURCES:.c=.o) usbdrv/usbdrv.o usbdrv/usbdrvasm.o usbdrv/oddebug.o
 #
 ############################## ATTiny25/45/85 ###############################
 # ATTiny*5 FUSE_L (Fuse low byte):
-# 0xe2 = 1 1 1 0   0 0 1 0
+# 0xe2 = 1 1 1 1   0 1 1 1
 #        ^ ^ \+/   \--+--/
-#        | |  |       +------- CKSEL 3..0 (clock selection -> internal rc @8 MHz)
-#        | |  +--------------- SUT 1..0 (BOD enabled, fast rising power)
+#        | |  |       +------- CKSEL 3..0 (clock selection -> crystal resonator)
+#        | |  +--------------- SUT 1..0 (Crystal resonator, slow rising power)
 #        | +------------------ CKOUT (clock output on CKOUT pin -> disabled)
 #        +-------------------- CKDIV8 (divide clock by 8 -> don't divide)
 # ATTiny*5 FUSE_H (Fuse high byte):

@@ -135,10 +135,7 @@ enum INFO_OPTIONS {
     INFO_NOANSWER
 };
 
-enum LIST_ENDS {
-    END_ALARM_LIST = 254,
-    END_CHECK_LIST = 255
-};
+#define END_LIST 0xFF
 
 /* ------------------------------------------------------------------------- */
 
@@ -364,46 +361,54 @@ int main(void)
 void InitCheck()
 {
     CurrentPtr = (uchar*) &RunTimeConfig.Monitor[0];
-    while(eeprom_read_byte(CurrentPtr) < END_ALARM_LIST)
+    while(eeprom_read_byte(CurrentPtr) != END_LIST)
         CurrentPtr++;
-    //next byte is expected checklist
+    CurrentPtr++;
+    //now expected element is from checklist
 }
 void InitAlarm()
 {
     CurrentPtr = (uchar*) &RunTimeConfig.Monitor[0];
-    CurrentPtr--;
 }
 char SendNextCheck()
 {
-    CurrentPtr++;
     uchar id = eeprom_read_byte(CurrentPtr);
-    if( id >= END_CHECK_LIST) {
+    CurrentPtr++;
+    if( id == END_LIST) {
         return 0;
     }
-        TxPacket.DstID = id;
-        TxPacket.SrcID = MyID;
-        TxPacket.Cmd = CM_TEST;
-        TxPacket.ExtraInfo[0] = TxPacket.SrcID;
-        TxPacket.ErrTickCounter = TickCounter;
-        TxPacket.Options = 0;
-        InitRFM69HWtx();
-        SendPacket(&TxPacket);
-        Timer2 = TM_TRANSMIT/OneTick;
+    TxPacket.DstID = id;
+    TxPacket.SrcID = MyID;
+    TxPacket.Cmd = CM_TEST;
+    TxPacket.ExtraInfo[0] = TxPacket.SrcID;
+    TxPacket.ErrTickCounter = TickCounter;
+    TxPacket.Options = 0;
+    InitRFM69HWtx();
+    SendPacket(&TxPacket);
+    Timer2 = TM_TRANSMIT/OneTick;
+    id = eeprom_read_byte(CurrentPtr);
+    if( id == END_LIST) {
+        return 0;
+    }
     return 1;
 }
 //SendNextAlarm is used only in the point where alarm is generated
 char SendNextAlarm(PacketStruc* Packet)
 {
-    CurrentPtr++;
     uchar id = eeprom_read_byte(CurrentPtr);
-    if(id >= END_ALARM_LIST) {
+    CurrentPtr++;
+    if(id == END_LIST) {
         return 0;
     }
-        Packet->DstID = id;
-        Packet->ErrTickCounter = TickCounter - ErrTickCounter;
-        InitRFM69HWtx();
-        SendPacket(Packet);
-        Timer2 = TM_TRANSMIT/OneTick;
+    Packet->DstID = id;
+    Packet->ErrTickCounter = TickCounter - ErrTickCounter;
+    InitRFM69HWtx();
+    SendPacket(Packet);
+    Timer2 = TM_TRANSMIT/OneTick;
+    id = eeprom_read_byte(CurrentPtr);
+    if(id == END_LIST) {
+        return 0;
+    }
     return 1;
 }
 //SendNextRetransmit - retransmits alarms or execs to adjacent points
@@ -413,31 +418,38 @@ char SendNextRetransmit(PacketStruc* Packet)
     uchar id;
     if(options & OP_TRYADJACENT) {
         options &= ~OP_TRYADJACENT;
-        do {
-            CurrentPtr++;
-            id = eeprom_read_byte(CurrentPtr);
-            if(id == TxPacket.ExtraInfo[0] && TxPacket.Cmd == CM_EXEC) {
-                Packet->DstID = id;
-                InitRFM69HWtx();
-                SendPacket(Packet);
-                Timer2 = TM_TRANSMIT/OneTick;
-                InitCheck();
-                return 1;
-            }
-        } while(id < END_CHECK_LIST); //scan to end of lists
+        //LOOK IN ALARMLIST and CHECKLIST so work twice
+        int i;
+        for(i = 0; i<2; i++) {
+            do {
+                id = eeprom_read_byte(CurrentPtr);
+                CurrentPtr++;
+                if(id != END_LIST && id == TxPacket.ExtraInfo[0] && TxPacket.Cmd == CM_EXEC) {
+                    Packet->DstID = id;
+                    InitRFM69HWtx();
+                    SendPacket(Packet);
+                    Timer2 = TM_TRANSMIT/OneTick;
+                    return 0;
+                }
+            } while(id != END_LIST); //scan to end of lists
+        }
         InitAlarm();
     }
     do {
-        CurrentPtr++;
         id = eeprom_read_byte(CurrentPtr);
-        if(id >= END_ALARM_LIST) {
+        if(id == END_LIST) {
             return 0;   //exit at the end of alarmlist
         }
+        CurrentPtr++;
     } while(id == ForbidID); //just skip forbid id
     Packet->DstID = id;
     InitRFM69HWtx();
     SendPacket(Packet);
     Timer2 = TM_TRANSMIT/OneTick;
+    id = eeprom_read_byte(CurrentPtr);
+    if(id == END_LIST) {
+        return 0;   //exit at the end of alarmlist
+    }
     return 1;
 }
 
@@ -553,24 +565,8 @@ ISR(WDT_vect)
             if(State == ST_RETR) {
                 SetTimer(TM_RETRY);
                 if(!SendNextRetransmit(&TxPacket)) {
-                    //todo: restore Timer1 and State -fixed
-                    Timer1 = PrevTimer1;
+                    Timer1 = PrevTimer1; //restore Timer1 and State -fixed
                     State = PrevState;
-                    //~ SetTimer(TM_WAIT_CHECK);
-                    //~ State = ST_WAIT;
-
-                    //~ if(options & OP_ALARMTRIGGER) {
-                        //~ InitAlarm();
-                        //~ //!~ options &= ~OP_TRYADJACENT;
-                        //~ SetTimer(TM_RETRY);
-                        //~ //todo: HERE MAY BE 1 minute timer
-                        //~ State = ST_ALRM;
-                        //~ if(!SendNextRetransmit(&ErPacket)){
-                            //~ SetTimer(TM_WAIT_CHECK);
-                            //~ State = ST_WAIT;
-                            //~ options &= ~ OP_ALARMTRIGGER;
-                        //~ }
-                    //~ }
                 }
             }
         }
@@ -586,19 +582,31 @@ ISR(WDT_vect)
             ReceivePacket(&RxPacket);
     //DEBUG LCD OPERATION ALARM AND LEVEL DISPLAY
             //if ALARM - just display for portable device
-            //~ if(RxPacket.Cmd == CM_ALRM) {
+            if(RxPacket.Cmd == CM_ALRM && RxPacket.Options != INFO_NOANSWER) {
                 LCD_Clear();
-                LCD_TransmitDot((TickCounter>>2)&0x0F,0);
-                LCD_TransmitDot(minRSSIValue&0x0F,LCD_HASH);
-                LCD_TransmitDot((minRSSIValue>>4)&0x0F,LCD_HASH);
+                if(RxPacket.ErrTickCounter < 99*60*4) {
+                    //show minutes
+                    int show = RxPacket.ErrTickCounter/4/60;
+                    LCD_TransmitDot((show%10)&0x0F,LCD_HASH);
+                    LCD_TransmitDot((show/10)&0x0F,LCD_HASH);
+                } else {
+                    //show overflow
+                    LCD_TransmitDot(4,LCD_RAW | LCD_HASH); //minuses
+                    LCD_TransmitDot(4,LCD_RAW | LCD_HASH);
+                }
+                //~ LCD_TransmitDot((TickCounter>>2)&0x0F,0);
+                //~ LCD_TransmitDot(minRSSIValue&0x0F,LCD_HASH);
+                //~ LCD_TransmitDot((minRSSIValue>>4)&0x0F,LCD_HASH);
                 LCD_TransmitDot(0,LCD_RAW);
-                //~ LCD_TransmitDot(RxPacket.Cmd&0x0F,0);
+                LCD_TransmitDot(RxPacket.Options&0x0F,0);
+                LCD_TransmitDot(RxPacket.ExtraInfo[0]&0x0F,LCD_DOT); //ErrID
+                LCD_TransmitDot((RxPacket.ExtraInfo[0]>>4)&0x0F,0);
                 LCD_TransmitDot(RxPacket.SrcID&0x0F,LCD_DOT);
                 LCD_TransmitDot((RxPacket.SrcID>>4)&0x0F,0);
-                LCD_TransmitDot(RxPacket.DstID&0x0F,LCD_DOT);
-                LCD_TransmitDot((RxPacket.DstID>>4)&0x0F,0);
+                //~ LCD_TransmitDot(RxPacket.DstID&0x0F,LCD_DOT);
+                //~ LCD_TransmitDot((RxPacket.DstID>>4)&0x0F,0);
                 minRSSIValue = 255;
-            //~ }
+            }
     //END DEBUG
             if(RxPacket.DstID != MyID) {
                 //Not mine
@@ -649,19 +657,22 @@ ISR(WDT_vect)
                     SetTimer(TM_WAIT_CHECK);
                     State = ST_WAIT;
                 } else {
-                    PrevState = State; //save Timer1 and State
-                    PrevTimer1 = Timer1;
-                    State = ST_RETR;
-                    SetTimer(TM_RETRY);
-                    ForbidID = RxPacket.SrcID;
-                    CopyPacket(&TxPacket,&RxPacket);
-                    TxPacket.SrcID = RxPacket.DstID;
+                    if(State != ST_RETR) {
+                        //note: while in st_retr we are skipping other retransmission requests
+                        PrevState = State; //save Timer1 and State
+                        PrevTimer1 = Timer1;
+                        State = ST_RETR;
+                        SetTimer(TM_RETRY);
+                        ForbidID = RxPacket.SrcID;
+                        CopyPacket(&TxPacket,&RxPacket);
+                        TxPacket.SrcID = RxPacket.DstID;
 
-                    InitAlarm();
-                    options |= OP_TRYADJACENT;  //trying to send only to proper destination
-                    if(!SendNextRetransmit(&TxPacket)) {
-                        Timer1 = PrevTimer1; //restore Timer1 and State
-                        State = PrevState;
+                        InitAlarm();
+                        options |= OP_TRYADJACENT;  //trying to send only to proper destination
+                        if(!SendNextRetransmit(&TxPacket)) {
+                            Timer1 = PrevTimer1; //restore Timer1 and State
+                            State = PrevState;
+                        }
                     }
                 }
             }

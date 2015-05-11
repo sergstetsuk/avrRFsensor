@@ -1,4 +1,11 @@
-Cmp-Mod V01 Created by CvPcb (22-Jun-2014 BZR 4027)-stable date = нд, 10-тра-2015 15:27:42 +0300
+Cmp-Mod V01 Created by CvPcb (22-Jun-2014 BZR 4027)-stable date = пн, 11-тра-2015 10:49:44 +0300
+
+BeginCmp
+TimeStamp = /55505F92;
+Reference = ANT1;
+ValeurCmp = CONN_1;
+IdModule  = 1PIN_SMD_1mm;
+EndCmp
 
 BeginCmp
 TimeStamp = /4F549CD9;
