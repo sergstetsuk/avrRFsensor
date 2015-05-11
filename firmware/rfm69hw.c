@@ -69,7 +69,7 @@ void InitRFM69HWCommon()
         //~ /*0x37*/{RegPacketConfig1,PACKET1_FORMAT_FIXED|PACKET1_DCFREE_MANCHESTER|PACKET1_CRC_ON|PACKET1_ADDRFILTER_OFF}, //default
         /*0x38*/{RegPayloadLength,sizeof(PacketStruc)},
         /*0x3C*/{RegFifoThresh,FIFOTHRESH_TXSTART_FIFONOTEMPTY|(sizeof(PacketStruc)-1)/*FIFO LEVEL VALUE*/}, //Fifo level+1 = packet size
-        //~ /*0x3d*/{RegPacketConfig2, PACKET2_AUTORXRESTART_OFF|PACKET2_AES_OFF}, //RXRESTARTDELAY must match transmitter PA ramp-down time (bitrate dependent)
+        /*0x3d*/{RegPacketConfig2, PACKET2_AUTORXRESTART_OFF|PACKET2_AES_OFF}, //RXRESTARTDELAY must match transmitter PA ramp-down time (bitrate dependent)
         //~ /*0x6f*/{RegTestDagc, TESTDAGC_IMPROVED_LOWBETA1}, // run DAGC continuously in RX mode, recommended AfcLowBetaOn=1 for low modulation systems
         //~ /*0x6f*/{RegTestDagc, TESTDAGC_IMPROVED_LOWBETA0}, // run DAGC continuously in RX mode, recommended AfcLowBetaOn=1 for low modulation systems
         /*0x6f*/{RegTestDagc, TESTDAGC_NORMAL}, // run DAGC continuously in RX mode, recommended AfcLowBetaOn=1 for low modulation systems
