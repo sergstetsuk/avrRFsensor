@@ -167,10 +167,10 @@ sub PlayAlarm(){
     #~ `play -q -n -c1 synth 0.5 sine 1600-100 synth 0.6 sine fmod 200-1400`
     #~ `play -q "|sox -n -p synth 2 sin 300-2000" "|sox -n -p synth  2 sin 2000-300"`;
     if($options == 3){
-        `play -q audio/alert.ogg`;
+        #~ `play -q audio/alert.ogg`;
     } else {
-        `play -q audio/siren.ogg`;
-        `play -q $filename`;
+        #~ `play -q audio/siren.ogg`;
+        #~ `play -q $filename`;
     }
     $Timer1 = $Now+10;
 }

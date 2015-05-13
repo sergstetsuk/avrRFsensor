@@ -45,7 +45,7 @@ void inline LCD_Load()
 }
 void LCD_TransmitDot(char cData, char isdot)
 {
-    char tData = 0;
+    char tData = cData; //raw data by defaule
     if (!(isdot & LCD_RAW) && cData < sizeof(CHARTABLE)/sizeof(CHARTABLE[0]))
     {
         tData = pgm_read_byte(&CHARTABLE[(int)cData]);

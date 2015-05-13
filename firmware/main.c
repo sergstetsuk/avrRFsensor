@@ -30,6 +30,7 @@
 #include "spi.h"
 #include "lcd.h"
 #include "rfm69hw.h"
+#include "buzzer.h"
 
 #define MODE_UNDEF 0
 #define MODE_USB 1
@@ -50,6 +51,7 @@
 #define TM_WAIT_ALARM_LONG 60000
 #define TM_FAST OneTick
 #define TM_TRANSMIT 1000
+#define TM_BUZZER 2000
 
 #define MAX_CHECK_RETRY 5
 char SendNextAlarm(PacketStruc* Packet);
@@ -98,7 +100,7 @@ static uchar    options;
 static uchar    debugmode;
 static uchar    State,PrevState;
 static uchar    minRSSIValue;
-static int      Timer1,PrevTimer1, Timer2;
+static int      Timer1, PrevTimer1, Timer2, Timer3;
 static uchar    MyID;
 static uchar    ForbidID;
 static uchar    CheckCounter;
@@ -346,10 +348,10 @@ int main(void)
         //debug off sleep_bod_disable();
         DDRB = 0; //disable all port B pins as outputs for saving energy
         DDRC = 0; //disable all port C pins as outputs for saving energy
-        DDRD = 0; //disable all port D pins as outputs for saving energy
+        //~ DDRD = 0; //disable all port D pins as outputs for saving energy
         PORTB = 0; //disable all port B pull-ups
         PORTC = 0; //disable all port C pull-ups
-        PORTD = 0; //disable all port D pull-ups
+        //~ PORTD = 0; //disable all port D pull-ups
         sei();
         sleep_cpu();
         sleep_disable();
@@ -463,6 +465,7 @@ ISR(WDT_vect)
     InitRFM69HW(); //for rfm cs
     Timer1--;
     Timer2--;
+    Timer3--;
     //init Analog Comparator
     ADCSRB = (0<<ACME);
     ACSR = (0<<ACD)|(0<<ACBG)|(1<<ACI)|(0<<ACIE)|(0<<ACIC);
@@ -606,6 +609,9 @@ ISR(WDT_vect)
                 //~ LCD_TransmitDot(RxPacket.DstID&0x0F,LCD_DOT);
                 //~ LCD_TransmitDot((RxPacket.DstID>>4)&0x0F,0);
                 minRSSIValue = 255;
+                Buzzer_Init();
+                Buzzer_On();
+                Timer3 = TM_BUZZER/OneTick;
             }
     //END DEBUG
             if(RxPacket.DstID != MyID) {
@@ -677,6 +683,10 @@ ISR(WDT_vect)
                 }
             }
             return;
+        }
+        if(Timer3 <= 0){
+            Buzzer_Disable();
+            Timer3 = 0;
         }
     }
 }
