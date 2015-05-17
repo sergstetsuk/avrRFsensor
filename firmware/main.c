@@ -41,15 +41,16 @@
 #define PACKET_LENGTH 16
 #define EEPROM_LENGTH 512
 
-#define OneTick 250
-#define SetTimer(x) Timer1 = x/OneTick
+#define TM_ONETICK 250
+#define SetTimer(x) Timer1 = x/TM_ONETICK
 
+#define TM_USBCONNECT 1000/TM_ONETICK
 #define TM_NOW 0
 #define TM_RETRY 2000
 #define TM_WAIT_CHECK 60000
 #define TM_WAIT_ALARM 10000  //was 15000
 #define TM_WAIT_ALARM_LONG 60000
-#define TM_FAST OneTick
+#define TM_FAST TM_ONETICK
 #define TM_TRANSMIT 1000
 #define TM_BUZZER 2000
 
@@ -110,7 +111,7 @@ static PacketStruc TxPacket;
 static PacketStruc ErPacket;
 
 #define OP_READINGPACKET 0x01
-#define OP_ALARMTRIGGER 0x02
+//~ #define OP_ALARMTRIGGER 0x02
 #define OP_RECEIVEDELAY 0x04
 #define OP_TRYADJACENT 0x08
 #define OP_TRIGGERONCE 0x10
@@ -217,7 +218,7 @@ uchar   usbFunctionWrite(uchar *data, uchar len)
         if(bytesRemaining == len) {
             InitRFM69HWtx();
             SendPacket(&TxPacket);
-            Timer2 = TM_TRANSMIT/OneTick;
+            Timer2 = TM_TRANSMIT/TM_ONETICK;
         }
     } else
     if (operationMode == 2) { /*WRITE EEPROM*/
@@ -319,27 +320,27 @@ int main(void)
     //TickCounter = 0; //not needed as in AVR all is 0, especially global and static vars
     /*USB_MODE needs regular usbPoll()*/
     sei();
-    while(TickCounter<4 || WorkingMode == MODE_USB){ /* main event loop for USB_MODE*/
+    while(TickCounter<TM_USBCONNECT || WorkingMode == MODE_USB){ /* main event loop for USB_MODE*/
         usbPoll();
         WDTCSR |= (1<<WDE) | (1<<WDIE);  //enable watchdog + enable interrupt on watchdog
     }
 //NOT USB_MODE works on WDT interrupt to reduce power consumption
     USB_INTR_ENABLE &= ~(1 << USB_INTR_ENABLE_BIT);
     WorkingMode = MODE_RX;  //now main mode is RX
-    SetTimer(TM_RETRY);
+    SetTimer(TM_NOW);
     State = ST_ALRM;
-    options |= OP_ALARMTRIGGER;
+    //~ options |= OP_ALARMTRIGGER;
     ErPacket.SrcID = MyID;
     ErPacket.Cmd = CM_ALRM;
     ErPacket.ExtraInfo[0] = ErPacket.SrcID;
     ErPacket.Options = INFO_RESTART;
     ErrTickCounter = TickCounter;
     InitAlarm();
-    if(!SendNextAlarm(&ErPacket)) {
-        SetTimer(TM_WAIT_CHECK);
-        State = ST_WAIT;
-        options &= ~ OP_ALARMTRIGGER;
-    }
+    //~ if(!SendNextAlarm(&ErPacket)) {
+        //~ SetTimer(TM_WAIT_CHECK);
+        //~ State = ST_WAIT;
+        //~ options &= ~ OP_ALARMTRIGGER;
+    //~ }
     
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);
     for(;;)
@@ -387,7 +388,7 @@ char SendNextCheck()
     TxPacket.Options = 0;
     InitRFM69HWtx();
     SendPacket(&TxPacket);
-    Timer2 = TM_TRANSMIT/OneTick;
+    Timer2 = TM_TRANSMIT/TM_ONETICK;
     id = eeprom_read_byte(CurrentPtr);
     if( id == END_LIST) {
         return 0;
@@ -406,7 +407,7 @@ char SendNextAlarm(PacketStruc* Packet)
     Packet->ErrTickCounter = TickCounter - ErrTickCounter;
     InitRFM69HWtx();
     SendPacket(Packet);
-    Timer2 = TM_TRANSMIT/OneTick;
+    Timer2 = TM_TRANSMIT/TM_ONETICK;
     id = eeprom_read_byte(CurrentPtr);
     if(id == END_LIST) {
         return 0;
@@ -430,7 +431,7 @@ char SendNextRetransmit(PacketStruc* Packet)
                     Packet->DstID = id;
                     InitRFM69HWtx();
                     SendPacket(Packet);
-                    Timer2 = TM_TRANSMIT/OneTick;
+                    Timer2 = TM_TRANSMIT/TM_ONETICK;
                     return 0;
                 }
             } while(id != END_LIST); //scan to end of lists
@@ -447,7 +448,7 @@ char SendNextRetransmit(PacketStruc* Packet)
     Packet->DstID = id;
     InitRFM69HWtx();
     SendPacket(Packet);
-    Timer2 = TM_TRANSMIT/OneTick;
+    Timer2 = TM_TRANSMIT/TM_ONETICK;
     id = eeprom_read_byte(CurrentPtr);
     if(id == END_LIST) {
         return 0;   //exit at the end of alarmlist
@@ -492,7 +493,7 @@ ISR(WDT_vect)
         if(ACSR&(1<<ACO)) {
                 //ALARM by link
             if((State == ST_WAIT || State == ST_CHCK) && options&OP_TRIGGERONCE) {
-                options |= OP_ALARMTRIGGER;
+                //~ options |= OP_ALARMTRIGGER;
                 ErPacket.SrcID = MyID;
                 ErPacket.Cmd = CM_ALRM;
                 ErPacket.ExtraInfo[0] = ErPacket.SrcID;
@@ -513,23 +514,23 @@ ISR(WDT_vect)
             if(State == ST_WAIT) {
                 InitCheck();
                 SetTimer(TM_RETRY); //retrycheck
-                Timer1 += 1000/OneTick*(MyID%4);
+                Timer1 += 1000/TM_ONETICK*(MyID%4);
                 State = ST_CHCK;
                 CheckCounter = 0;
                 if(!SendNextCheck()){ //no check queue
                     SetTimer(TM_WAIT_CHECK); //waitcorrection
-                    Timer1 += 1000/OneTick*(MyID%16);
+                    Timer1 += 1000/TM_ONETICK*(MyID%16);
                     State = ST_WAIT;
                 }
             } else
             if(State == ST_CHCK) {
                 SetTimer(TM_RETRY); ///retrycheck
-                Timer1 +=1000/OneTick*(MyID%4);
+                Timer1 +=1000/TM_ONETICK*(MyID%4);
                 if (CheckCounter++ < MAX_CHECK_RETRY) {
                     CurrentPtr--; //Send the same request
                     if(!SendNextCheck()){ //the end
                         SetTimer(TM_WAIT_CHECK); //waitcorrection
-                        Timer1 += 1000/OneTick*(MyID%16);
+                        Timer1 += 1000/TM_ONETICK*(MyID%16);
                         State = ST_WAIT;
                     }
                 } else {
@@ -555,14 +556,14 @@ ISR(WDT_vect)
                 SetTimer(TM_RETRY);
                 if(!SendNextAlarm(&ErPacket)) {
                     SetTimer(TM_WAIT_ALARM);
-                    if(TickCounter - ErrTickCounter > TM_WAIT_ALARM_LONG/OneTick) {
+                    if(TickCounter - ErrTickCounter > TM_WAIT_ALARM_LONG/TM_ONETICK) {
                         SetTimer(TM_WAIT_ALARM_LONG);
                     }
                     InitAlarm();
-                    if(!(options & OP_ALARMTRIGGER)) {
-                        SetTimer(TM_WAIT_CHECK);
-                        State = ST_WAIT;
-                    }
+                    //~ if(!(options & OP_ALARMTRIGGER)) {
+                        //~ SetTimer(TM_WAIT_CHECK);
+                        //~ State = ST_WAIT;
+                    //~ }
                 }
             } else
             if(State == ST_RETR) {
@@ -602,16 +603,18 @@ ISR(WDT_vect)
                 //~ LCD_TransmitDot((minRSSIValue>>4)&0x0F,LCD_HASH);
                 LCD_TransmitDot(0,LCD_RAW);
                 LCD_TransmitDot(RxPacket.Options&0x0F,0);
-                LCD_TransmitDot(RxPacket.ExtraInfo[0]&0x0F,LCD_DOT); //ErrID
-                LCD_TransmitDot((RxPacket.ExtraInfo[0]>>4)&0x0F,0);
-                LCD_TransmitDot(RxPacket.SrcID&0x0F,LCD_DOT);
-                LCD_TransmitDot((RxPacket.SrcID>>4)&0x0F,0);
+                LCD_TransmitDot(0,LCD_RAW);
+                LCD_TransmitDot((RxPacket.ExtraInfo[0]%10)&0x0F,0); //ErrID
+                LCD_TransmitDot((RxPacket.ExtraInfo[0]/10%10)&0x0F,0); //ErrID
+                LCD_TransmitDot((RxPacket.ExtraInfo[0]/100)&0x0F,0); //ErrID
+                //~ LCD_TransmitDot(RxPacket.ExtraInfo[0]&0x0F,LCD_DOT); //ErrID
+                //~ LCD_TransmitDot((RxPacket.ExtraInfo[0]>>4)&0x0F,0);
+                //~ LCD_TransmitDot(RxPacket.SrcID&0x0F,LCD_DOT);
+                //~ LCD_TransmitDot((RxPacket.SrcID>>4)&0x0F,0);
                 //~ LCD_TransmitDot(RxPacket.DstID&0x0F,LCD_DOT);
                 //~ LCD_TransmitDot((RxPacket.DstID>>4)&0x0F,0);
                 minRSSIValue = 255;
-                Buzzer_Init();
-                Buzzer_On();
-                Timer3 = TM_BUZZER/OneTick;
+                Timer3 = TM_BUZZER/TM_ONETICK;
             }
     //END DEBUG
             if(RxPacket.DstID != MyID) {
@@ -628,13 +631,13 @@ ISR(WDT_vect)
                 RxPacket.Options = 0;
                 InitRFM69HWtx();
                 SendPacket(&RxPacket);
-                Timer2 = TM_TRANSMIT/OneTick;
+                Timer2 = TM_TRANSMIT/TM_ONETICK;
             } else
             if(RxPacket.Cmd == CM_ANSW) {
                 if(State == ST_CHCK && RxPacket.SrcID == eeprom_read_byte(CurrentPtr)) {
                     if(!SendNextCheck()){ //the end
                         SetTimer(TM_WAIT_CHECK); //waitcorrection
-                        Timer1 += 1000/OneTick*(MyID%16);
+                        Timer1 += 1000/TM_ONETICK*(MyID%16);
                         State = ST_WAIT;
                     }
                 }
@@ -659,7 +662,7 @@ ISR(WDT_vect)
             } else
             if(RxPacket.Cmd == CM_EXEC) {
                 if(RxPacket.ExtraInfo[0] == MyID) {
-                    options &= ~ OP_ALARMTRIGGER;
+                    //~ options &= ~ OP_ALARMTRIGGER;
                     SetTimer(TM_WAIT_CHECK);
                     State = ST_WAIT;
                 } else {
@@ -685,8 +688,14 @@ ISR(WDT_vect)
             return;
         }
         if(Timer3 <= 0){
-            Buzzer_Disable();
+            Buzzer_Off();
             Timer3 = 0;
+        } else {
+            if(Timer3 & 1) {
+                Buzzer_On();
+            } else {
+                Buzzer_Off();
+            }
         }
     }
 }

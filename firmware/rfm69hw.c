@@ -114,7 +114,7 @@ void InitRFM69HWrx(unsigned char nodeAddr)
             /*0x58*/WriteRFM69HW(RegTestLna,TESTLNA_SENSITIVITY_NORMAL);  //HIGH = -120 dB Rx
     //~ WriteRFM69HW(RegFrfLsb,FRFLSB_433 + 0x08); //10% thumbup
     WriteRFM69HW(RegNodeAdrs,nodeAddr); //default gain is 0xe4=228 (-Sensitivity/2) = -114dB
-    WriteRFM69HW(RegRssiThresh,192); //default gain is 0xe4=228 (-Sensitivity/2) = -114dB
+    WriteRFM69HW(RegRssiThresh,228); //default gain is 0xe4=228 (-Sensitivity/2) = -114dB
     WriteRFM69HW(RegAutoModes,AUTOMODES_ENTER_CRCOK
                              |AUTOMODES_EXIT_FIFOEMPTY
                              |AUTOMODES_INTERMEDIATE_SLEEP); //enter crcok,exit fifoempty, interstate sleep
