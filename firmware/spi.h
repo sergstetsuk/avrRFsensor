@@ -5,6 +5,7 @@
             |(0<<USICS1)|(0<<USICS0)|(0<<USICLK)|(1<<USITC) //Software strobe
 
 void inline SPI_Init();
+void inline SPI_Disable();
 void inline SPI_SetData(char cData);
 void inline SPI_OneClock();
 char SPI_Transmit (char cData);

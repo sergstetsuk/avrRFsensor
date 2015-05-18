@@ -12,10 +12,15 @@
     #define RFM_CS PORTB2
 #endif
 
-void InitRFM69HW(void)
+void inline RFM69HW_Init(void)
 {
     RFM_PORT |= (1<<RFM_CS); //CS FOR RFM69HW 1 = not selected
     RFM_DDR |= (1<<RFM_CS);  //init CS pins for devices
+}
+
+void inline RFM69HW_Disable(void)
+{
+    RFM_DDR &= ~(1<<RFM_CS);  //disable CS pins for devices
 }
 
 unsigned char ReadRFM69HW(unsigned char reg)
@@ -125,6 +130,10 @@ void InitRFM69HWrx(unsigned char nodeAddr)
     WriteRFM69HW(RegOpMode,OPMODE_LISTEN_ON|OPMODE_STNDBY|OPMODE_SEQUENCER_ON);
     //~ WriteRFM69HW(RegOpMode,OPMODE_RX|OPMODE_SEQUENCER_ON);
     //todo: try to make sleep instead of stndby
+    if(nodeAddr == 0xFF) {
+        WriteRFM69HW(RegPacketConfig1,PACKET1_FORMAT_FIXED|PACKET1_DCFREE_MANCHESTER|PACKET1_CRC_ON|PACKET1_ADDRFILTER_OFF); //LCD mode
+
+    }
 }
 
 void InitRFM69HWtx()

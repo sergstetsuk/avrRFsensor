@@ -10,6 +10,7 @@
 #define LCD_RAW 0x04
 
 void inline LCD_Init();
+void inline LCD_Disable();
 void inline LCD_Load();
 void LCD_Transmit(char);
 void LCD_TransmitDot(char,char);

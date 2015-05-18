@@ -304,7 +304,7 @@ int main(void)
      * additional hardware initialization.
      */
     SPI_Init(); //init spi interface
-    InitRFM69HW(); //for rfm cs
+    RFM69HW_Init(); //for rfm cs
     InitRFM69HWrx(MyID); //default mode is rx between transmissions
 
     usbInit();
@@ -341,18 +341,18 @@ int main(void)
         //~ State = ST_WAIT;
         //~ options &= ~ OP_ALARMTRIGGER;
     //~ }
+    DDRB = 0; //disable all port B pins as outputs for saving energy
+    DDRC = 0; //disable all port C pins as outputs for saving energy
+    DDRD = 0; //disable all port D pins as outputs for saving energy
+    PORTB = 0; //disable all port B pull-ups
+    PORTC = 0; //disable all port C pull-ups
+    PORTD = 0; //disable all port D pull-ups
     
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);
     for(;;)
     {
         sleep_enable();
         //debug off sleep_bod_disable();
-        DDRB = 0; //disable all port B pins as outputs for saving energy
-        DDRC = 0; //disable all port C pins as outputs for saving energy
-        //~ DDRD = 0; //disable all port D pins as outputs for saving energy
-        PORTB = 0; //disable all port B pull-ups
-        PORTC = 0; //disable all port C pull-ups
-        //~ PORTD = 0; //disable all port D pull-ups
         sei();
         sleep_cpu();
         sleep_disable();
@@ -463,7 +463,7 @@ ISR(WDT_vect)
     TickCounter++;  //increment global tick counter
     SPI_Init(); //init spi interface
     LCD_Init(); //init lcd interface
-    InitRFM69HW(); //for rfm cs
+    RFM69HW_Init(); //for rfm cs
     Timer1--;
     Timer2--;
     Timer3--;
@@ -471,7 +471,7 @@ ISR(WDT_vect)
     ADCSRB = (0<<ACME);
     ACSR = (0<<ACD)|(0<<ACBG)|(1<<ACI)|(0<<ACIE)|(0<<ACIC);
     DIDR1 = (1<<AIN1D)|(1<<AIN0D);
-    //ACMPInit()
+    //ACMP_Init()
     //......................
     if (ReadRFM69HW(RegIrqFlags1) & IRQFLAGS1_RXREADY)  //level measuring
     {
@@ -579,14 +579,17 @@ ISR(WDT_vect)
         {
             if(!(options & OP_RECEIVEDELAY)) {
                     options |= OP_RECEIVEDELAY;
+                    SPI_Disable();
+                    LCD_Disable();
+                    RFM69HW_Disable();
                     return;
                 }
             options &= ~OP_RECEIVEDELAY;
             //received packet processing procedure after one takt delay
             ReceivePacket(&RxPacket);
     //DEBUG LCD OPERATION ALARM AND LEVEL DISPLAY
-            //if ALARM - just display for portable device
-            if(RxPacket.Cmd == CM_ALRM && RxPacket.Options != INFO_NOANSWER) {
+            //if ALARM - just display for portable device //LCD mode
+            if(MyID == 0xFF && RxPacket.Cmd == CM_ALRM && RxPacket.Options != INFO_NOANSWER) {
                 LCD_Clear();
                 if(RxPacket.ErrTickCounter < 99*60*4) {
                     //show minutes
@@ -619,6 +622,9 @@ ISR(WDT_vect)
     //END DEBUG
             if(RxPacket.DstID != MyID) {
                 //Not mine
+                SPI_Disable();
+                LCD_Disable();
+                RFM69HW_Disable();
                 return;
             }
             if(RxPacket.Cmd == CM_TEST) {
@@ -685,18 +691,23 @@ ISR(WDT_vect)
                     }
                 }
             }
-            return;
         }
-        if(Timer3 <= 0){
-            Buzzer_Off();
-            Timer3 = 0;
-        } else {
-            if(Timer3 & 1) {
-                Buzzer_On();
-            } else {
+        if(MyID == 0xFF) { //LCD mode
+            if(Timer3 <= 0){
                 Buzzer_Off();
+                Timer3 = 0;
+            } else {
+                if(Timer3 & 1) {
+                    Buzzer_On();
+                } else {
+                    Buzzer_Off();
+                }
             }
         }
     }
+    //Disable all output pins at the end
+    SPI_Disable();
+    LCD_Disable();
+    RFM69HW_Disable();
 }
 /* ------------------------------------------------------------------------- */

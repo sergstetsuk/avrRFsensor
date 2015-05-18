@@ -41,6 +41,12 @@ void inline SPI_Init()
     SPI_DDR |= (1<<SPI_DO)|(1<<SPI_SCK);    //Configure SCK & DO pins as outputs
 }
 
+void inline SPI_Disable()
+{
+    SPI_DDR &= ~(1<<SPI_DI);                //Disable DI
+    SPI_DDR &= ~(1<<SPI_DO)|(1<<SPI_SCK);   //Disable SCK
+}
+
 char SPI_Transmit (char cData)
 {
     unsigned char rData=0,i;

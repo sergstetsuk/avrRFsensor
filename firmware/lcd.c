@@ -38,6 +38,11 @@ void inline LCD_Init()
     LCD_DDR |= (1<<LCD_LOAD);   //Configure LOAD pin as output
 }
 
+void inline LCD_Disable()
+{
+    LCD_DDR &= ~(1<<LCD_LOAD);   //Configure LOAD pin as output
+}
+
 void inline LCD_Load()
 {
     LCD_PORT |= (1<<LCD_LOAD);  //Load data strobe
